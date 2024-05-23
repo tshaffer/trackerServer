@@ -5,6 +5,7 @@ import {
   getBundle,
   getBundleMap,
   getVersion,
+  uploadCreditCardStatement,
 } from '../controllers';
 
 export class Routes {
@@ -22,5 +23,8 @@ export class Routes {
     app.get('/build/bundle.js.map', getBundleMap);
 
     app.get('/api/v1/version', getVersion);
+
+    app.post('/api/v1/creditCardStatement', uploadCreditCardStatement);
+
   }
 }
