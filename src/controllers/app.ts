@@ -5,7 +5,7 @@ import multer from 'multer';
 import * as fs from 'fs';
 const path = require('node:path');
 import Papa from 'papaparse';
-import { isBoolean, isString } from 'lodash';
+import { isBoolean, isNumber, isString } from 'lodash';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
   console.log('getVersion');
@@ -88,6 +88,10 @@ const processCreditCardStatement = (transactions: any[]): string[] => {
         console.log('transactionDate: special character encountered');
       }
     }
+    if (!isValidDate(transactionDate)) {
+      console.log('invalid transactionDate: ', transactionDate);
+    }
+
     let postDate = parsedLine[1];
     if (isString(postDate)) {
       if (postDate.charCodeAt(0) === 65279) {
@@ -95,6 +99,10 @@ const processCreditCardStatement = (transactions: any[]): string[] => {
         console.log('postDate: special character encountered');
       }
     }
+    if (!isValidDate(postDate)) {
+      console.log('invalid postDate: ', postDate);
+    }
+
     let description = parsedLine[2];
     if (isString(description)) {
       if (description.charCodeAt(0) === 65279) {
@@ -123,6 +131,12 @@ const processCreditCardStatement = (transactions: any[]): string[] => {
         console.log('amount: special character encountered');
       }
     }
+    if (isNumber(amount)) {
+      console.log('amount is number'); 
+    }
+
+    // console.log(transactionDate, postDate, description, category, type, amount);
+
   }
 
   console.log('parseComplete');
@@ -137,6 +151,28 @@ const isEmptyLine = (lineOfInput: any[]): boolean => {
       return false;
     }
   }
+  return true;
+}
+
+function isValidDate(dateString: string): boolean {
+  // Check if the string can be parsed into a date
+  const date = new Date(dateString);
+
+  // Check if the date is valid
+  if (isNaN(date.getTime())) {
+      console.log('failed first check for date: ', dateString);
+      return false;
+  }
+
+  // Additional check to ensure the parsed date matches the input string
+  // This prevents cases where invalid dates like "2023-02-30" are parsed as valid dates
+  const [month, day, year] = dateString.split('/').map(Number);
+
+  if (year !== date.getFullYear() || month !== (date.getMonth() + 1) || day !== date.getDate()) {
+    console.log(year, date.getFullYear(), month, date.getMonth() + 1, day, date.getDate());
+    return false;
+  }
+
   return true;
 }
 
