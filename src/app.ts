@@ -16,7 +16,7 @@ class App {
   constructor() {
 
     try {
-      readConfig('/Users/tedshaffer/Documents/Projects/tedTaggerServer/src/config/config.env');
+      readConfig('/Users/tedshaffer/Documents/Projects/tracker/trackerServer/src/config/config.env');
     } catch (err: any) {
       console.log('readConfig error');
     }
