@@ -19,9 +19,12 @@ export const getVersion = (request: Request, response: Response, next: any) => {
 
 export const uploadCreditCardStatement = async (request: Request, response: Response, next: any) => {
 
+  console.log('uploadCreditCardStatement');
+
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, 'public');
+      // cb(null, 'public');
+      cb(null, '/Users/tedshaffer/Documents/Projects/tracker/trackerServer/public');
     },
     filename: function (req, file, cb) {
       cb(null, 'creditCardStatement.csv');
@@ -32,12 +35,17 @@ export const uploadCreditCardStatement = async (request: Request, response: Resp
 
   upload(request, response, function (err) {
     if (err instanceof multer.MulterError) {
+      console.log('MulterError: ', err);
       return response.status(500).json(err);
     } else if (err) {
+      console.log('nonMulterError: ', err);
       return response.status(500).json(err);
     }
     console.log('return from upload: ', request.file);
-    const filePath: string = path.join('public', 'creditCardStatement.csv');
+
+    const originalFileName: string = request.file.originalname;
+    // const filePath: string = path.join('public', 'creditCardStatement.csv');
+    const filePath: string = '/Users/tedshaffer/Documents/Projects/tracker/trackerServer/public/creditCardStatement.csv';
     const content: string = fs.readFileSync(filePath).toString();
 
     const result = Papa.parse(content,
@@ -48,7 +56,7 @@ export const uploadCreditCardStatement = async (request: Request, response: Resp
       });
 
 
-    return processCreditCardStatement(result.data as any[]).then((errorList: string[]) => {
+    return processCreditCardStatement(originalFileName, result.data as any[]).then((errorList: string[]) => {
       if (errorList.length > 0) {
         return response.status(400).json(errorList);
       } else {
@@ -61,7 +69,20 @@ export const uploadCreditCardStatement = async (request: Request, response: Resp
   });
 };
 
-const processCreditCardStatement = async (transactions: any[]): Promise<string[]> => {
+const processCreditCardStatement = async (originalFileName: string, transactions: any[]): Promise<string[]> => {
+
+  // Chase7011_Activity20220601_20221231_20240521.csv
+  // Cash Reserve - 2137_07-01-2023_12-31-2023.csv
+  if (originalFileName.startsWith('Chase7011_Activity')) {
+    console.log('Chase credit card statement');
+    return Promise.resolve([]);
+  } else if (originalFileName.startsWith('Cash Reserve - 2137_')) {
+    console.log('US Bank checking account');
+    return Promise.resolve([]);
+  } else {
+    console.log('originalFileName does not match expected pattern: ', originalFileName);
+    return Promise.reject('Invalid file name');
+  };
 
   const creditCardTransactions: CreditCardTransactionEntity[] = [];
 
