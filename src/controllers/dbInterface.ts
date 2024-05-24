@@ -1,8 +1,6 @@
-import { isArray, isNil, isString } from 'lodash';
-import { Document } from 'mongoose';
 import { CreditCardTransactionEntity } from 'entities';
 
-import CreditCardTransaction, { getCreditCardTransactionModel } from '../models/CreditCardTransaction';
+import { getCreditCardTransactionModel, getCheckingAccountTransactionModel } from '../models';
 
 // export const createCreditCardTransaction = (creditCardTransactionEntity: CreditCardTransactionEntity): Promise<Document | void> => {
 //   return CreditCardTransaction.create(creditCardTransactionEntity)
@@ -17,7 +15,7 @@ import CreditCardTransaction, { getCreditCardTransactionModel } from '../models/
 //     });
 // }
 
-export const addCreateCreditCardTransactionsToDb = async (creditCardTransactions: CreditCardTransactionEntity[]): Promise<any> => {
+export const addCreditCardTransactionsToDb = async (creditCardTransactions: CreditCardTransactionEntity[]): Promise<any> => {
   const creditCardTransactionModel = getCreditCardTransactionModel();
   return creditCardTransactionModel.collection.insertMany(creditCardTransactions)
     .then((retVal: any) => {
@@ -30,3 +28,15 @@ export const addCreateCreditCardTransactionsToDb = async (creditCardTransactions
     });
 }
 
+export const addCheckingAccountTransactionsToDb = async (checkingAccountTransactions: any[]): Promise<any> => {
+  const checkingAccountTransactionModel = getCheckingAccountTransactionModel();
+  return checkingAccountTransactionModel.collection.insertMany(checkingAccountTransactions)
+    .then((retVal: any) => {
+      return Promise.resolve(retVal);
+    })
+    .catch((error: any) => {
+      console.log('db add error: ', error);
+      debugger;
+      return null;
+    });
+}

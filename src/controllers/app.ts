@@ -6,8 +6,8 @@ import * as fs from 'fs';
 const path = require('node:path');
 import Papa from 'papaparse';
 import { isBoolean, isNumber, isString } from 'lodash';
-import { CreditCardTransactionEntity } from 'entities';
-import { addCreateCreditCardTransactionsToDb } from './dbInterface';
+import { CheckingAccountTransactionEntity, CreditCardTransactionEntity } from 'entities';
+import { addCheckingAccountTransactionsToDb, addCreditCardTransactionsToDb } from './dbInterface';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
   console.log('getVersion');
@@ -17,9 +17,9 @@ export const getVersion = (request: Request, response: Response, next: any) => {
   response.json(data);
 };
 
-export const uploadCreditCardStatement = async (request: Request, response: Response, next: any) => {
+export const uploadStatement = async (request: Request, response: Response, next: any) => {
 
-  console.log('uploadCreditCardStatement');
+  console.log('uploadStatement');
 
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -27,7 +27,7 @@ export const uploadCreditCardStatement = async (request: Request, response: Resp
       cb(null, '/Users/tedshaffer/Documents/Projects/tracker/trackerServer/public');
     },
     filename: function (req, file, cb) {
-      cb(null, 'creditCardStatement.csv');
+      cb(null, 'statement.csv');
     }
   });
 
@@ -45,7 +45,7 @@ export const uploadCreditCardStatement = async (request: Request, response: Resp
 
     const originalFileName: string = request.file.originalname;
     // const filePath: string = path.join('public', 'creditCardStatement.csv');
-    const filePath: string = '/Users/tedshaffer/Documents/Projects/tracker/trackerServer/public/creditCardStatement.csv';
+    const filePath: string = '/Users/tedshaffer/Documents/Projects/tracker/trackerServer/public/statement.csv';
     const content: string = fs.readFileSync(filePath).toString();
 
     const result = Papa.parse(content,
@@ -56,7 +56,7 @@ export const uploadCreditCardStatement = async (request: Request, response: Resp
       });
 
 
-    return processCreditCardStatement(originalFileName, result.data as any[]).then((errorList: string[]) => {
+    return processStatement(originalFileName, result.data as any[]).then((errorList: string[]) => {
       if (errorList.length > 0) {
         return response.status(400).json(errorList);
       } else {
@@ -69,79 +69,57 @@ export const uploadCreditCardStatement = async (request: Request, response: Resp
   });
 };
 
-const processCreditCardStatement = async (originalFileName: string, transactions: any[]): Promise<string[]> => {
+const processStatement = async (originalFileName: string, csvTransactions: any[]): Promise<string[]> => {
 
   // Chase7011_Activity20220601_20221231_20240521.csv
   // Cash Reserve - 2137_07-01-2023_12-31-2023.csv
   if (originalFileName.startsWith('Chase7011_Activity')) {
     console.log('Chase credit card statement');
-    return Promise.resolve([]);
+    const errorList: string[] = await processCreditCardStatement(csvTransactions);
+    return Promise.resolve(errorList);
   } else if (originalFileName.startsWith('Cash Reserve - 2137_')) {
     console.log('US Bank checking account');
-    return Promise.resolve([]);
+    const errorList: string[] = await processCheckingAccountStatement(csvTransactions);
+    return Promise.resolve(errorList);
   } else {
     console.log('originalFileName does not match expected pattern: ', originalFileName);
     return Promise.reject('Invalid file name');
   };
+}
 
-  const creditCardTransactions: CreditCardTransactionEntity[] = [];
+const processCreditCardStatement = async (csvTransactions: any[]): Promise<string[]> => {
+
+  const transactions: CreditCardTransactionEntity[] = [];
 
   const errorList: string[] = [];
 
   console.log('processCreditCardStatement');
 
-  for (let i = 0; i < transactions.length; i++) {
+  for (let i = 0; i < csvTransactions.length; i++) {
 
-    const parsedLine: any[] = transactions[i];
+    const parsedLine: any[] = csvTransactions[i];
 
     if (isEmptyLine(parsedLine)) {
       continue;
     }
 
-    let transactionDate = parsedLine[0];
-    if (isString(transactionDate)) {
+    /*
       if (transactionDate.charCodeAt(0) === 65279) {
         transactionDate = (transactionDate as string).substring(1);
       }
-    }
+    */
+    const transactionDate = parsedLine[0];
     if (!isValidDate(transactionDate)) {
       continue;
     }
-
-    let postDate = parsedLine[1];
-    if (isString(postDate)) {
-      if (postDate.charCodeAt(0) === 65279) {
-        postDate = (postDate as string).substring(1);
-      }
-    }
+    const postDate = parsedLine[1];
     if (!isValidDate(postDate)) {
       continue;
     }
-
-    let description = parsedLine[2];
-    if (isString(description)) {
-      if (description.charCodeAt(0) === 65279) {
-        description = (description as string).substring(1);
-      }
-    }
-    let category = parsedLine[3];
-    if (isString(category)) {
-      if (category.charCodeAt(0) === 65279) {
-        category = (category as string).substring(1);
-      }
-    }
-    let type = parsedLine[4];
-    if (isString(type)) {
-      if (type.charCodeAt(0) === 65279) {
-        type = (type as string).substring(1);
-      }
-    }
-    let amount = parsedLine[5];
-    if (isString(amount)) {
-      if (amount.charCodeAt(0) === 65279) {
-        amount = (amount as string).substring(1);
-      }
-    }
+    const description = parsedLine[2];
+    const category = parsedLine[3];
+    const type = parsedLine[4];
+    const amount = parsedLine[5];
     const creditCardTransaction: CreditCardTransactionEntity = {
       transactionDate,
       postDate,
@@ -151,12 +129,59 @@ const processCreditCardStatement = async (originalFileName: string, transactions
       amount,
     };
 
-    creditCardTransactions.push(creditCardTransaction);
+    transactions.push(creditCardTransaction);
   }
 
-  await addCreateCreditCardTransactionsToDb(creditCardTransactions);
+  await addCreditCardTransactionsToDb(transactions);
 
   console.log('processCreditCardStatement complete');
+
+  return Promise.resolve(errorList);
+}
+
+const processCheckingAccountStatement = async (csvTransactions: any[]): Promise<string[]> => {
+
+  const transactions: CheckingAccountTransactionEntity[] = [];
+
+  const errorList: string[] = [];
+
+  console.log('processCheckingAccountStatement');
+
+  for (let i = 0; i < csvTransactions.length; i++) {
+
+    const parsedLine: any[] = csvTransactions[i];
+
+    if (isEmptyLine(parsedLine)) {
+      continue;
+    }
+
+    /*
+      if (transactionDate.charCodeAt(0) === 65279) {
+        transactionDate = (transactionDate as string).substring(1);
+      }
+    */
+    const transactionDate = parsedLine[0];
+    const transactionType = parsedLine[1];
+    const name = parsedLine[2];
+    const memo = parsedLine[3];
+    const amount = parsedLine[4];
+    if (!isNumber(amount)) {
+      continue;
+    }
+    const checkingAccountTransaction: CheckingAccountTransactionEntity = {
+      transactionDate,
+      transactionType,
+      name,
+      memo,
+      amount,
+    };
+
+    transactions.push(checkingAccountTransaction);
+  }
+
+  await addCheckingAccountTransactionsToDb(transactions);
+
+  console.log('processCheckingAccountStatement complete');
 
   return Promise.resolve(errorList);
 }

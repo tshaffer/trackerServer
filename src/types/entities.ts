@@ -6,3 +6,11 @@ export interface CreditCardTransactionEntity {
   type: string;
   amount: number;
 }
+
+export interface CheckingAccountTransactionEntity {
+  transactionDate: string;
+  transactionType: string;
+  name: string;
+  memo: string;
+  amount: number;
+}
