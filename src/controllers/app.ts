@@ -1,13 +1,14 @@
 import { Request, Response } from 'express';
 
+import { v4 as uuidv4 } from 'uuid';
 import { version } from '../version';
 import multer from 'multer';
 import * as fs from 'fs';
-const path = require('node:path');
 import Papa from 'papaparse';
 import { isBoolean, isNumber, isString } from 'lodash';
-import { CheckingAccountTransactionEntity, CreditCardTransactionEntity } from 'entities';
-import { addCheckingAccountTransactionsToDb, addCreditCardTransactionsToDb } from './dbInterface';
+import { CheckingAccountTransactionEntity, CreditCardTransactionEntity, StatementEntity } from 'entities';
+import { addCheckingAccountTransactionsToDb, addCreditCardTransactionsToDb, addStatementToDb, createStatement } from './dbInterface';
+import { StatementType } from '../types/enums';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
   console.log('getVersion');
@@ -56,42 +57,68 @@ export const uploadStatement = async (request: Request, response: Response, next
       });
 
 
-    return processStatement(originalFileName, result.data as any[]).then((errorList: string[]) => {
-      if (errorList.length > 0) {
-        return response.status(400).json(errorList);
-      } else {
+    return processStatement(originalFileName, result.data as any[])
+      .then(() => {
         const responseData = {
           uploadStatus: 'success',
         };
         return response.status(200).send(responseData);
-      }
-    });
+
+      });
   });
 };
 
-const processStatement = async (originalFileName: string, csvTransactions: any[]): Promise<string[]> => {
+const processStatement = async (originalFileName: string, csvTransactions: any[]): Promise<void> => {
 
-  // Chase7011_Activity20220601_20221231_20240521.csv
-  // Cash Reserve - 2137_07-01-2023_12-31-2023.csv
+  const statementId: string = uuidv4();
+
   if (originalFileName.startsWith('Chase7011_Activity')) {
+
     console.log('Chase credit card statement');
-    const errorList: string[] = await processCreditCardStatement(csvTransactions);
-    return Promise.resolve(errorList);
+
+    // Chase7011_Activity20220601_20221231_20240521.csv
+    const startDateStr: string = originalFileName.substring(18, 26);
+    const dbStartDate: string = getCreditCardStatementDate(startDateStr);
+    const endDateStr: string = originalFileName.substring(27, 35);
+    const dbEndDate: string = getCreditCardStatementDate(endDateStr);
+
+    const statementEntity: StatementEntity = {
+      id: statementId,
+      type: StatementType.CreditCard,
+      startDate: dbStartDate,
+      endDate: dbEndDate,
+    };
+    await addStatementToDb(statementEntity);
+    await processCreditCardStatement(statementId, csvTransactions);
+    return Promise.resolve();
   } else if (originalFileName.startsWith('Cash Reserve - 2137_')) {
+
+    // Cash Reserve - 2137_07-01-2023_12-31-2023.csv
     console.log('US Bank checking account');
-    const errorList: string[] = await processCheckingAccountStatement(csvTransactions);
-    return Promise.resolve(errorList);
+
+    const startDateStr: string = originalFileName.substring(20, 30);
+    const dbStartDate: string = getCheckingAccountStatementDate(startDateStr);
+    const endDateStr: string = originalFileName.substring(31, 41);
+    const dbEndDate: string = getCheckingAccountStatementDate(endDateStr);
+
+    const statementEntity: StatementEntity = {
+      id: statementId,
+      type: StatementType.Checking,
+      startDate: dbStartDate,
+      endDate: dbEndDate,
+    };
+    await addStatementToDb(statementEntity);
+    await processCheckingAccountStatement(statementId, csvTransactions);
+    return Promise.resolve();
   } else {
     console.log('originalFileName does not match expected pattern: ', originalFileName);
     return Promise.reject('Invalid file name');
   };
 }
 
-const processCreditCardStatement = async (csvTransactions: any[]): Promise<string[]> => {
+const processCreditCardStatement = async (statementId: string, csvTransactions: any[]) => {
 
   const transactions: CreditCardTransactionEntity[] = [];
-
-  const errorList: string[] = [];
 
   console.log('processCreditCardStatement');
 
@@ -121,6 +148,8 @@ const processCreditCardStatement = async (csvTransactions: any[]): Promise<strin
     const type = parsedLine[4];
     const amount = parsedLine[5];
     const creditCardTransaction: CreditCardTransactionEntity = {
+      id: uuidv4(),
+      statementId,
       transactionDate,
       postDate,
       description,
@@ -135,11 +164,9 @@ const processCreditCardStatement = async (csvTransactions: any[]): Promise<strin
   await addCreditCardTransactionsToDb(transactions);
 
   console.log('processCreditCardStatement complete');
-
-  return Promise.resolve(errorList);
 }
 
-const processCheckingAccountStatement = async (csvTransactions: any[]): Promise<string[]> => {
+const processCheckingAccountStatement = async (statementId: string, csvTransactions: any[]): Promise<string[]> => {
 
   const transactions: CheckingAccountTransactionEntity[] = [];
 
@@ -169,6 +196,8 @@ const processCheckingAccountStatement = async (csvTransactions: any[]): Promise<
       continue;
     }
     const checkingAccountTransaction: CheckingAccountTransactionEntity = {
+      id: uuidv4(),
+      statementId,
       transactionDate,
       transactionType,
       name,
@@ -224,3 +253,24 @@ const transform = (arg1: any, arg2: any) => {
   }
 }
 
+const getCreditCardStatementDate = (dateStr: string): string => {
+  const year = dateStr.substring(0, 4);
+  const yearValue = parseInt(year);
+  const month = dateStr.substring(4, 6);
+  const monthIndex = parseInt(month) - 1;
+  const day = dateStr.substring(6, 8);
+  const dayValue = parseInt(day);
+  const date = new Date(yearValue, monthIndex, dayValue);
+  return date.toISOString();
+};
+
+const getCheckingAccountStatementDate = (dateStr: string): string => {
+  const month = dateStr.substring(0, 2);
+  const monthIndex = parseInt(month) - 1;
+  const day = dateStr.substring(3, 5);
+  const dayValue = parseInt(day);
+  const year = dateStr.substring(6, 10);
+  const yearValue = parseInt(year);
+  const date = new Date(yearValue, monthIndex, dayValue);
+  return date.toISOString();
+};

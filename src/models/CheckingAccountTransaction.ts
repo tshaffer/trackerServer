@@ -7,6 +7,8 @@ mongoose.Schema.Types.String.checkRequired(v => typeof v === 'string');
 
 const CheckingAccountTransactionSchema = new Schema(
   {
+    id: { type: String, required: true },
+    statementId: { type: String, required: true },
     transactionDate: { type: String, required: true },
     transactionType: { type: String, required: true },
     name: { type: String, required: true },
