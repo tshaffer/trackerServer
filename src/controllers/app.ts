@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import Papa from 'papaparse';
 import { isBoolean, isNumber, isString } from 'lodash';
 import { CheckingAccountTransactionEntity, CreditCardTransactionEntity, StatementEntity } from 'entities';
-import { addCheckingAccountTransactionsToDb, addCreditCardTransactionsToDb, addStatementToDb, createStatement } from './dbInterface';
+import { addCheckingAccountTransactionsToDb, addCreditCardTransactionsToDb, addStatementToDb, createStatement, getTransactionsFromDb } from './dbInterface';
 import { StatementType } from '../types/enums';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
@@ -16,6 +16,20 @@ export const getVersion = (request: Request, response: Response, next: any) => {
     serverVersion: version,
   };
   response.json(data);
+};
+
+export const getTransactions = async (request: Request, response: Response, next: any) => {
+
+  console.log('getTransactions');
+
+  const startDate: string | null = request.query.startDate ? request.query.startDate as string : null;
+  const endDate: string | null = request.query.endDate ? request.query.endDate as string : null;
+
+  const transactions: any[] = await getTransactionsFromDb(
+    startDate,
+    endDate,
+  );
+  response.json(transactions);
 };
 
 export const uploadStatement = async (request: Request, response: Response, next: any) => {

@@ -2,6 +2,7 @@ import { CreditCardTransactionEntity, StatementEntity } from 'entities';
 
 import { getCreditCardTransactionModel, getCheckingAccountTransactionModel } from '../models';
 import Statement, { getStatementModel } from '../models/Statement';
+import { start } from 'repl';
 
 export const createStatement = async (statementEntity: StatementEntity): Promise<string> => {
   return Statement.create(statementEntity)
@@ -68,3 +69,28 @@ export const addCheckingAccountTransactionsToDb = async (checkingAccountTransact
       return null;
     });
 }
+
+export const getTransactionsFromDb = async (
+  startDate: string,
+  endDate: string,
+): Promise<any[]> => {
+
+  let querySpec = {};
+
+  querySpec = { transactionDate: { $gte: startDate, $lte: endDate } }
+
+  console.log('getTransactionsFromDb: ', querySpec);
+
+  const creditCardTransactionModel = getCreditCardTransactionModel();
+
+  const query = creditCardTransactionModel.find(querySpec);
+
+  const documents: any = await query.exec();
+  const transactions: any[] = [];
+  for (const document of documents) {
+    const transaction: any = document.toObject() as any;
+    transactions.push(transaction);
+  }
+  return transactions;
+}
+
