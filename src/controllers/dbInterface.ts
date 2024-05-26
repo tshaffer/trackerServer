@@ -73,7 +73,7 @@ export const addCheckingAccountTransactionsToDb = async (checkingAccountTransact
 export const getTransactionsFromDb = async (
   startDate: string,
   endDate: string,
-): Promise<any[]> => {
+): Promise<CreditCardTransactionEntity[]> => {
 
   let querySpec = {};
 
@@ -86,9 +86,9 @@ export const getTransactionsFromDb = async (
   const query = creditCardTransactionModel.find(querySpec);
 
   const documents: any = await query.exec();
-  const transactions: any[] = [];
+  const transactions: CreditCardTransactionEntity[] = [];
   for (const document of documents) {
-    const transaction: any = document.toObject() as any;
+    const transaction: CreditCardTransactionEntity = document.toObject() as CreditCardTransactionEntity;
     transactions.push(transaction);
   }
   return transactions;
