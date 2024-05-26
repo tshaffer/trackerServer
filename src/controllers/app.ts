@@ -149,14 +149,15 @@ const processCreditCardStatement = async (statementId: string, csvTransactions: 
         transactionDate = (transactionDate as string).substring(1);
       }
     */
-    const transactionDate = parsedLine[0];
-    if (!isValidDate(transactionDate)) {
+    if (!isValidDate(parsedLine[0])) {
       continue;
     }
-    const postDate = parsedLine[1];
-    if (!isValidDate(postDate)) {
+    if (!isValidDate(parsedLine[1])) {
       continue;
     }
+    const transactionDate = getIsoDate(parsedLine[0]);
+    const postDate = getIsoDate(parsedLine[1]);
+
     const description = parsedLine[2];
     const category = parsedLine[3];
     const type = parsedLine[4];
@@ -227,6 +228,17 @@ const processCheckingAccountStatement = async (statementId: string, csvTransacti
   console.log('processCheckingAccountStatement complete');
 
   return Promise.resolve(errorList);
+}
+
+const getIsoDate = (dateStr: string): string => {
+  const year = dateStr.substring(6, 10);
+  const yearValue = parseInt(year);
+  const month = dateStr.substring(0, 2);
+  const monthIndex = parseInt(month) - 1;
+  const day = dateStr.substring(3, 5);
+  const dayValue = parseInt(day);
+  const date = new Date(yearValue, monthIndex, dayValue);
+  return date.toISOString();
 }
 
 function isValidDate(dateString: string): boolean {
