@@ -5,8 +5,8 @@ import { version } from '../version';
 import multer from 'multer';
 import * as fs from 'fs';
 import Papa from 'papaparse';
-import { isBoolean, isNumber, isString } from 'lodash';
-import { CheckingAccountTransactionEntity, CreditCardCategoryEntity, CreditCardDescriptionKeywordEntity, CreditCardTransactionEntity, StatementEntity } from 'entities';
+import { isBoolean, isNil, isNumber, isString } from 'lodash';
+import { CheckingAccountTransactionEntity, CategoryEntity, CreditCardDescriptionKeywordEntity, CreditCardTransactionEntity, StatementEntity, CategorizedTransactionEntity } from 'entities';
 import { addCheckingAccountTransactionsToDb, addCreditCardTransactionsToDb, addStatementToDb, createStatement, getCreditCardCategoriesFromDb, getCreditCardDescriptionKeywordsFromDb, getTransactionsFromDb } from './dbInterface';
 import { StatementType } from '../types/enums';
 
@@ -27,29 +27,31 @@ export const getCategorizedTransactions = async (request: Request, response: Res
 
   const transactions: CreditCardTransactionEntity[] = await getTransactionsFromDb(startDate, endDate);
 
-  const creditCardCategories: CreditCardCategoryEntity[] = await getCreditCardCategoriesFromDb();
+  const creditCardCategories: CategoryEntity[] = await getCreditCardCategoriesFromDb();
 
   const creditCardDescriptionKeywords: CreditCardDescriptionKeywordEntity[] = await getCreditCardDescriptionKeywordsFromDb();
 
-  const categorizedTransactions: string[] = categorizeTransactions(transactions, creditCardCategories, creditCardDescriptionKeywords);
+  const categorizedTransactions: CategorizedTransactionEntity[] = categorizeTransactions(transactions, creditCardCategories, creditCardDescriptionKeywords);
 
   response.json(categorizedTransactions);
 };
 
 const categorizeTransactions = (
   transactions: CreditCardTransactionEntity[],
-  creditCardCategories: CreditCardCategoryEntity[],
-  creditCardDescriptionKeywords: CreditCardDescriptionKeywordEntity[]): string[] => {
+  creditCardCategories: CategoryEntity[],
+  creditCardDescriptionKeywords: CreditCardDescriptionKeywordEntity[]): CategorizedTransactionEntity[] => {
 
-  const categorizedTransactions: string[] = [];
+  const categorizedTransactions: CategorizedTransactionEntity[] = [];
 
   for (const transaction of transactions) {
-    const category: string = categorizeTransaction(transaction, creditCardCategories, creditCardDescriptionKeywords);
-    const categorizedTransaction: any = {
-      transaction,
-      category,
-    };
-    categorizedTransactions.push(categorizedTransaction);
+    const category: CategoryEntity | null = categorizeTransaction(transaction, creditCardCategories, creditCardDescriptionKeywords);
+    if (!isNil(category)) {
+      const categorizedTransaction: CategorizedTransactionEntity = {
+        transaction,
+        category,
+      };
+      categorizedTransactions.push(categorizedTransaction);
+    }
   }
 
   return categorizedTransactions;
@@ -57,22 +59,28 @@ const categorizeTransactions = (
 
 const categorizeTransaction = (
   transaction: CreditCardTransactionEntity,
-  creditCardCategories: CreditCardCategoryEntity[],
-  creditCardDescriptionKeywords: CreditCardDescriptionKeywordEntity[]): string => {
+  creditCardCategories: CategoryEntity[],
+  creditCardDescriptionKeywords: CreditCardDescriptionKeywordEntity[]): CategoryEntity | null => {
 
   for (const descriptionKeyword of creditCardDescriptionKeywords) {
     if (transaction.description.includes(descriptionKeyword.keyword)) {
-      return descriptionKeyword.keyword;
+      const creditCardDescriptionKeywordEntity: CreditCardDescriptionKeywordEntity = descriptionKeyword;
+      const categoryId = creditCardDescriptionKeywordEntity.categoryId;
+      for (const category of creditCardCategories) {
+        if (category.id === categoryId) {
+          return category;
+        }
+      }
     }
   }
 
   for (const category of creditCardCategories) {
     if (transaction.category === category.keyword) {
-      return category.keyword;
+      return category;
     }
   }
 
-  return 'Uncategorized';
+  return null;
 };
 
 export const uploadStatement = async (request: Request, response: Response, next: any) => {

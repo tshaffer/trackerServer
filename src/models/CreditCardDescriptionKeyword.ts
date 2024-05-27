@@ -7,12 +7,14 @@ mongoose.Schema.Types.String.checkRequired(v => typeof v === 'string');
 
 const CreditCardDescriptionKeywordSchema = new Schema(
   {
+    id: { type: String, required: true },
     keyword: { type: String, required: true },
+    categoryId: { type: String, required: true },
   },
 );
 
 export const getCreditCardDescriptionKeywordModel = () => {
-  const creditCardDescriptionKeywordModel = connection.model('creditCardDescriptionKeyword', CreditCardDescriptionKeywordSchema);
+  const creditCardDescriptionKeywordModel = connection.model('creditcarddescriptionkeyword', CreditCardDescriptionKeywordSchema);
   return creditCardDescriptionKeywordModel;
 }
 

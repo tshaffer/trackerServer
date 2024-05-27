@@ -28,10 +28,17 @@ export interface StatementEntity {
   endDate: string;
 }
 
-export interface CreditCardCategoryEntity {
+export interface CategoryEntity {
+  id: string
   keyword: string;
 }
 
 export interface CreditCardDescriptionKeywordEntity {
+  id: string;
   keyword: string;
+  categoryId: string;
 }
+
+export interface CategorizedTransactionEntity {
+  transaction: CreditCardTransactionEntity;
+  category: CategoryEntity;

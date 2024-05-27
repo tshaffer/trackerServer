@@ -1,4 +1,4 @@
-import { CreditCardCategoryEntity, CreditCardDescriptionKeywordEntity, CreditCardTransactionEntity, StatementEntity } from 'entities';
+import { CategoryEntity, CreditCardDescriptionKeywordEntity, CreditCardTransactionEntity, StatementEntity } from 'entities';
 
 import { getCreditCardTransactionModel, getCheckingAccountTransactionModel, getCreditCardCategoryKeywordModel, getCreditCardDescriptionKeywordModel } from '../models';
 import Statement, { getStatementModel } from '../models/Statement';
@@ -95,7 +95,7 @@ export const getTransactionsFromDb = async (
 }
 
 export const getCreditCardCategoriesFromDb = async (
-): Promise<CreditCardCategoryEntity[]> => {
+): Promise<CategoryEntity[]> => {
 
   console.log('getCreditCardCategoriesFromDb: ');
 
@@ -104,9 +104,9 @@ export const getCreditCardCategoriesFromDb = async (
   const query = creditCardCategoryModel.find();
 
   const documents: any = await query.exec();
-  const categories: CreditCardCategoryEntity[] = [];
+  const categories: CategoryEntity[] = [];
   for (const document of documents) {
-    const category: CreditCardCategoryEntity = document.toObject() as CreditCardCategoryEntity;
+    const category: CategoryEntity = document.toObject() as CategoryEntity;
     categories.push(category);
   }
   return categories;
