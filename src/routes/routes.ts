@@ -7,6 +7,7 @@ import {
   getCategorizedTransactions,
   getVersion,
   uploadStatement,
+  addCategory,
 } from '../controllers';
 
 export class Routes {
@@ -28,5 +29,6 @@ export class Routes {
 
     app.post('/api/v1/creditCardStatement', uploadStatement);
 
+    app.post('/api/v1/addCategory', addCategory);
   }
 }

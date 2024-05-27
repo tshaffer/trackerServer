@@ -5,9 +5,9 @@ import { version } from '../version';
 import multer from 'multer';
 import * as fs from 'fs';
 import Papa from 'papaparse';
-import { isBoolean, isNil, isNumber, isString } from 'lodash';
+import { isBoolean, isNil, isNumber } from 'lodash';
 import { CheckingAccountTransactionEntity, CategoryEntity, CreditCardDescriptionKeywordEntity, CreditCardTransactionEntity, StatementEntity, CategorizedTransactionEntity } from 'entities';
-import { addCheckingAccountTransactionsToDb, addCreditCardTransactionsToDb, addStatementToDb, createStatement, getCreditCardCategoriesFromDb, getCreditCardDescriptionKeywordsFromDb, getTransactionsFromDb } from './dbInterface';
+import { addCategoryToDb, addCheckingAccountTransactionsToDb, addCreditCardTransactionsToDb, addStatementToDb, getCreditCardCategoriesFromDb, getCreditCardDescriptionKeywordsFromDb, getTransactionsFromDb } from './dbInterface';
 import { StatementType } from '../types/enums';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
@@ -80,6 +80,7 @@ const categorizeTransaction = (
     }
   }
 
+  console.log(transaction);
   return null;
 };
 
@@ -351,3 +352,14 @@ const getCheckingAccountStatementDate = (dateStr: string): string => {
   const date = new Date(yearValue, monthIndex, dayValue);
   return date.toISOString();
 };
+
+export const addCategory = async (request: Request, response: Response, next: any) => {
+  const { keyword } = request.body;
+  const categoryId: string = uuidv4();
+  const categoryEntity: CategoryEntity = {
+    id: categoryId,
+    keyword,
+  };
+  await addCategoryToDb(categoryEntity);
+  return response.status(200).send();
+}

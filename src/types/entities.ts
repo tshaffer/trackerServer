@@ -42,3 +42,4 @@ export interface CreditCardDescriptionKeywordEntity {
 export interface CategorizedTransactionEntity {
   transaction: CreditCardTransactionEntity;
   category: CategoryEntity;
+}
