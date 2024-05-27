@@ -4,7 +4,7 @@ import {
   getCSS,
   getBundle,
   getBundleMap,
-  getTransactions,
+  getCategorizedTransactions,
   getVersion,
   uploadStatement,
 } from '../controllers';
@@ -24,7 +24,7 @@ export class Routes {
     app.get('/build/bundle.js.map', getBundleMap);
 
     app.get('/api/v1/version', getVersion);
-    app.get('/api/v1/transactions', getTransactions);
+    app.get('/api/v1/categorizedTransactions', getCategorizedTransactions);
 
     app.post('/api/v1/creditCardStatement', uploadStatement);
 

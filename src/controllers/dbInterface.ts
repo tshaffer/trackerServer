@@ -1,6 +1,6 @@
-import { CreditCardTransactionEntity, StatementEntity } from 'entities';
+import { CreditCardCategoryEntity, CreditCardDescriptionKeywordEntity, CreditCardTransactionEntity, StatementEntity } from 'entities';
 
-import { getCreditCardTransactionModel, getCheckingAccountTransactionModel } from '../models';
+import { getCreditCardTransactionModel, getCheckingAccountTransactionModel, getCreditCardCategoryKeywordModel, getCreditCardDescriptionKeywordModel } from '../models';
 import Statement, { getStatementModel } from '../models/Statement';
 import { start } from 'repl';
 
@@ -93,4 +93,41 @@ export const getTransactionsFromDb = async (
   }
   return transactions;
 }
+
+export const getCreditCardCategoriesFromDb = async (
+): Promise<CreditCardCategoryEntity[]> => {
+
+  console.log('getCreditCardCategoriesFromDb: ');
+
+  const creditCardCategoryModel = getCreditCardCategoryKeywordModel();
+
+  const query = creditCardCategoryModel.find();
+
+  const documents: any = await query.exec();
+  const categories: CreditCardCategoryEntity[] = [];
+  for (const document of documents) {
+    const category: CreditCardCategoryEntity = document.toObject() as CreditCardCategoryEntity;
+    categories.push(category);
+  }
+  return categories;
+}
+
+export const getCreditCardDescriptionKeywordsFromDb = async (
+): Promise<CreditCardDescriptionKeywordEntity[]> => {
+
+  console.log('getCreditCardDescriptionKeywordsFromDb: ');
+
+  const creditCardDescriptionKeywordModel = getCreditCardDescriptionKeywordModel();
+
+  const query = creditCardDescriptionKeywordModel.find();
+
+  const documents: any = await query.exec();
+  const descriptionKeywords: CreditCardDescriptionKeywordEntity[] = [];
+  for (const document of documents) {
+    const descriptionKeyword: CreditCardDescriptionKeywordEntity = document.toObject() as CreditCardDescriptionKeywordEntity;
+    descriptionKeywords.push(descriptionKeyword);
+  }
+  return descriptionKeywords;
+}
+
 

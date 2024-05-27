@@ -6,8 +6,8 @@ import multer from 'multer';
 import * as fs from 'fs';
 import Papa from 'papaparse';
 import { isBoolean, isNumber, isString } from 'lodash';
-import { CheckingAccountTransactionEntity, CreditCardTransactionEntity, StatementEntity } from 'entities';
-import { addCheckingAccountTransactionsToDb, addCreditCardTransactionsToDb, addStatementToDb, createStatement, getTransactionsFromDb } from './dbInterface';
+import { CheckingAccountTransactionEntity, CreditCardCategoryEntity, CreditCardDescriptionKeywordEntity, CreditCardTransactionEntity, StatementEntity } from 'entities';
+import { addCheckingAccountTransactionsToDb, addCreditCardTransactionsToDb, addStatementToDb, createStatement, getCreditCardCategoriesFromDb, getCreditCardDescriptionKeywordsFromDb, getTransactionsFromDb } from './dbInterface';
 import { StatementType } from '../types/enums';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
@@ -18,18 +18,61 @@ export const getVersion = (request: Request, response: Response, next: any) => {
   response.json(data);
 };
 
-export const getTransactions = async (request: Request, response: Response, next: any) => {
+export const getCategorizedTransactions = async (request: Request, response: Response, next: any) => {
 
-  console.log('getTransactions');
+  console.log('getCategorizedTransactions');
 
   const startDate: string | null = request.query.startDate ? request.query.startDate as string : null;
   const endDate: string | null = request.query.endDate ? request.query.endDate as string : null;
 
-  const transactions: any[] = await getTransactionsFromDb(
-    startDate,
-    endDate,
-  );
-  response.json(transactions);
+  const transactions: CreditCardTransactionEntity[] = await getTransactionsFromDb(startDate, endDate);
+
+  const creditCardCategories: CreditCardCategoryEntity[] = await getCreditCardCategoriesFromDb();
+
+  const creditCardDescriptionKeywords: CreditCardDescriptionKeywordEntity[] = await getCreditCardDescriptionKeywordsFromDb();
+
+  const categorizedTransactions: string[] = categorizeTransactions(transactions, creditCardCategories, creditCardDescriptionKeywords);
+
+  response.json(categorizedTransactions);
+};
+
+const categorizeTransactions = (
+  transactions: CreditCardTransactionEntity[],
+  creditCardCategories: CreditCardCategoryEntity[],
+  creditCardDescriptionKeywords: CreditCardDescriptionKeywordEntity[]): string[] => {
+
+  const categorizedTransactions: string[] = [];
+
+  for (const transaction of transactions) {
+    const category: string = categorizeTransaction(transaction, creditCardCategories, creditCardDescriptionKeywords);
+    const categorizedTransaction: any = {
+      transaction,
+      category,
+    };
+    categorizedTransactions.push(categorizedTransaction);
+  }
+
+  return categorizedTransactions;
+};
+
+const categorizeTransaction = (
+  transaction: CreditCardTransactionEntity,
+  creditCardCategories: CreditCardCategoryEntity[],
+  creditCardDescriptionKeywords: CreditCardDescriptionKeywordEntity[]): string => {
+
+  for (const descriptionKeyword of creditCardDescriptionKeywords) {
+    if (transaction.description.includes(descriptionKeyword.keyword)) {
+      return descriptionKeyword.keyword;
+    }
+  }
+
+  for (const category of creditCardCategories) {
+    if (transaction.category === category.keyword) {
+      return category.keyword;
+    }
+  }
+
+  return 'Uncategorized';
 };
 
 export const uploadStatement = async (request: Request, response: Response, next: any) => {

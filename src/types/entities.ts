@@ -27,3 +27,11 @@ export interface StatementEntity {
   startDate: string;
   endDate: string;
 }
+
+export interface CreditCardCategoryEntity {
+  keyword: string;
+}
+
+export interface CreditCardDescriptionKeywordEntity {
+  keyword: string;
+}
