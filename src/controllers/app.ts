@@ -6,7 +6,7 @@ import multer from 'multer';
 import * as fs from 'fs';
 import Papa from 'papaparse';
 import { isBoolean, isNil, isNumber } from 'lodash';
-import { CheckingAccountTransactionEntity, CategoryEntity, CreditCardDescriptionKeywordEntity, CreditCardTransactionEntity, StatementEntity, CategorizedTransactionEntity } from 'entities';
+import { CategorizedStatementData, CheckingAccountTransactionEntity, CategoryEntity, CreditCardDescriptionKeywordEntity, CreditCardTransactionEntity, StatementEntity, CategorizedTransactionEntity } from 'entities';
 import { addCategoryToDb, addCheckingAccountTransactionsToDb, addCreditCardTransactionsToDb, addStatementToDb, getCreditCardCategoriesFromDb, getCreditCardDescriptionKeywordsFromDb, getTransactionsFromDb } from './dbInterface';
 import { StatementType } from '../types/enums';
 
@@ -33,7 +33,20 @@ export const getCategorizedTransactions = async (request: Request, response: Res
 
   const categorizedTransactions: CategorizedTransactionEntity[] = categorizeTransactions(transactions, creditCardCategories, creditCardDescriptionKeywords);
 
-  response.json(categorizedTransactions);
+  let sum = 0;
+  for (const categorizedTransaction of categorizedTransactions) {
+    sum += categorizedTransaction.transaction.amount;
+  }
+  sum = roundTo(-sum, 2)
+
+  const categorizedStatementData: CategorizedStatementData = {
+    startDate,
+    endDate,
+    transactions: categorizedTransactions,
+    total: sum,
+  };
+
+  response.json(categorizedStatementData);
 };
 
 const categorizeTransactions = (
@@ -43,6 +56,8 @@ const categorizeTransactions = (
 
   const categorizedTransactions: CategorizedTransactionEntity[] = [];
 
+  let sum: number = 0;
+
   for (const transaction of transactions) {
     const category: CategoryEntity | null = categorizeTransaction(transaction, creditCardCategories, creditCardDescriptionKeywords);
     if (!isNil(category)) {
@@ -51,11 +66,24 @@ const categorizeTransactions = (
         category,
       };
       categorizedTransactions.push(categorizedTransaction);
+
+      sum += transaction.amount;
     }
   }
 
+  console.log('sum: ', sum);
+  const sumString: string = (-sum).toFixed(2);
+  console.log('sumString: ', sumString);
+  const roundedSum: number = roundTo(-sum, 2);
+  console.log('roundedSum: ', roundedSum);
+
   return categorizedTransactions;
 };
+
+const roundTo = (num: number, precision: number): number => {
+  const factor = Math.pow(10, precision)
+  return Math.round(num * factor) / factor
+}
 
 const categorizeTransaction = (
   transaction: CreditCardTransactionEntity,
@@ -134,7 +162,7 @@ export const uploadStatement = async (request: Request, response: Response, next
   });
 };
 
-const processStatement = async (originalFileName: string, csvTransactions: any[]): Promise<void> => {
+const processStatement = async (originalFileName: string, csvTransactions: any[]): Promise<string> => {
 
   const statementId: string = uuidv4();
 
@@ -156,7 +184,7 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
     };
     await addStatementToDb(statementEntity);
     await processCreditCardStatement(statementId, csvTransactions);
-    return Promise.resolve();
+    return Promise.resolve(statementId);
   } else if (originalFileName.startsWith('Cash Reserve - 2137_')) {
 
     // Cash Reserve - 2137_07-01-2023_12-31-2023.csv
@@ -175,7 +203,7 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
     };
     await addStatementToDb(statementEntity);
     await processCheckingAccountStatement(statementId, csvTransactions);
-    return Promise.resolve();
+    return Promise.resolve(statementId);
   } else {
     console.log('originalFileName does not match expected pattern: ', originalFileName);
     return Promise.reject('Invalid file name');
