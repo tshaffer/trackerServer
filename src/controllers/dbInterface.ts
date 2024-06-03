@@ -1,4 +1,4 @@
-import { CategoryEntity, CreditCardDescriptionKeywordEntity, CreditCardTransactionEntity, StatementEntity } from 'entities';
+import { CategoryEntity, CheckingAccountNameKeywordEntity, CheckingAccountTransactionEntity, CreditCardDescriptionKeywordEntity, CreditCardTransactionEntity, StatementEntity } from 'entities';
 
 import {
   getCreditCardTransactionModel,
@@ -6,6 +6,8 @@ import {
   getCategoryModel,
   getCreditCardDescriptionKeywordModel,
   getStatementModel,
+  getCheckingAccountNameKeywordModel,
+  getCheckingAccountCategoryModel
 } from '../models';
 
 export const addStatementToDb = async (statement: StatementEntity): Promise<void> => {
@@ -47,7 +49,31 @@ export const addCheckingAccountTransactionsToDb = async (checkingAccountTransact
     });
 }
 
-export const getTransactionsFromDb = async (
+export const getCheckingAccountTransactionsFromDb = async (
+  startDate: string,
+  endDate: string,
+): Promise<CheckingAccountTransactionEntity[]> => {
+
+  let querySpec = {};
+
+  querySpec = { transactionDate: { $gte: startDate, $lte: endDate } }
+
+  console.log('getCheckingAccountTransactionsFromDb: ', querySpec);
+
+  const checkingAccountTransactionModel = getCheckingAccountTransactionModel();
+
+  const query = checkingAccountTransactionModel.find(querySpec);
+
+  const documents: any = await query.exec();
+  const transactions: CheckingAccountTransactionEntity[] = [];
+  for (const document of documents) {
+    const transaction: CheckingAccountTransactionEntity = document.toObject() as any;
+    transactions.push(transaction);
+  }
+  return transactions;
+};
+
+export const getCreditCardTransactionsFromDb = async (
   startDate: string,
   endDate: string,
 ): Promise<CreditCardTransactionEntity[]> => {
@@ -56,7 +82,7 @@ export const getTransactionsFromDb = async (
 
   querySpec = { transactionDate: { $gte: startDate, $lte: endDate } }
 
-  console.log('getTransactionsFromDb: ', querySpec);
+  console.log('getCreditCardTransactionsFromDb: ', querySpec);
 
   const creditCardTransactionModel = getCreditCardTransactionModel();
 
@@ -120,4 +146,55 @@ export const addCategoryToDb = async (category: CategoryEntity): Promise<void> =
       return null;
     });
 }
+
+export const addCategoryKeywordToDb = async (creditCardDescriptionKeywordEntity: CreditCardDescriptionKeywordEntity): Promise<void> => {
+  const creditCardDescriptionKeywordModel = getCreditCardDescriptionKeywordModel();
+  return creditCardDescriptionKeywordModel.collection.insertOne(creditCardDescriptionKeywordEntity)
+    .then(() => {
+      return Promise.resolve();
+    })
+    .catch((error: any) => {
+      console.log('db add error: ', error);
+      debugger;
+      return null;
+    });
+}
+
+export const getCheckingAccountNameKeywordsFromDb = async (
+): Promise<CheckingAccountNameKeywordEntity[]> => {
+
+  console.log('getCheckingAccountNameKeywordsFromDb: ');
+
+  const checkingAccountNameKeywordModel = getCheckingAccountNameKeywordModel();
+
+  const query = checkingAccountNameKeywordModel.find();
+
+  const documents: any = await query.exec();
+  const descriptionKeywords: CheckingAccountNameKeywordEntity[] = [];
+  for (const document of documents) {
+    const descriptionKeyword: CheckingAccountNameKeywordEntity = document.toObject() as CheckingAccountNameKeywordEntity;
+    descriptionKeywords.push(descriptionKeyword);
+  }
+  return descriptionKeywords;
+}
+
+export const getCheckingAccountCategoriesFromDb = async (
+): Promise<CategoryEntity[]> => {
+
+  console.log('getCheckingAccountCategoriesFromDb: ');
+
+  const checkingAccountCategoryModel = getCheckingAccountCategoryModel();
+
+  const query = checkingAccountCategoryModel.find();
+
+  const documents: any = await query.exec();
+  const categories: CategoryEntity[] = [];
+  for (const document of documents) {
+    const category: CategoryEntity = document.toObject() as CategoryEntity;
+    categories.push(category);
+  }
+  return categories;
+}
+
+
 

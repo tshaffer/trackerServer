@@ -50,3 +50,15 @@ export interface CategorizedTransactionEntity {
   transaction: CreditCardTransactionEntity;
   category: CategoryEntity;
 }
+
+export interface CheckingAccountNameKeywordEntity {
+  id: string;
+  keyword: string;
+  categoryId: string;
+}
+
+export interface CategorizedCheckingAccountTransactionEntity {
+  transaction: CheckingAccountTransactionEntity;
+  category: CategoryEntity;
+}
+
