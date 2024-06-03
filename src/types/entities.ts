@@ -3,8 +3,17 @@ import { StatementType } from "enums";
 export interface CategorizedStatementData {
   startDate: string;
   endDate: string;
-  transactions: CategorizedTransactionEntity[];
+  transactions: TransactionEntity[];
   total: number;
+}
+
+export interface TransactionEntity {
+  id: string;
+  statementId: string;
+  transactionDate: string;
+  amount: number;
+  description: string;
+  category: string;
 }
 
 export interface CreditCardTransactionEntity {

@@ -6,7 +6,7 @@ import multer from 'multer';
 import * as fs from 'fs';
 import Papa from 'papaparse';
 import { isBoolean, isNil, isNumber } from 'lodash';
-import { CategorizedStatementData, CheckingAccountTransactionEntity, CategoryEntity, CreditCardDescriptionKeywordEntity, CreditCardTransactionEntity, StatementEntity, CategorizedTransactionEntity, CheckingAccountNameKeywordEntity } from 'entities';
+import { CategorizedStatementData, CheckingAccountTransactionEntity, CategoryEntity, CreditCardDescriptionKeywordEntity, CreditCardTransactionEntity, StatementEntity, CategorizedTransactionEntity, CheckingAccountNameKeywordEntity, CategorizedCheckingAccountTransactionEntity, TransactionEntity } from 'entities';
 import { addCategoryKeywordToDb, addCategoryToDb, addCheckingAccountTransactionsToDb, addCreditCardTransactionsToDb, addStatementToDb, getCheckingAccountCategoriesFromDb, getCheckingAccountNameKeywordsFromDb, getCheckingAccountTransactionsFromDb, getCreditCardCategoriesFromDb, getCreditCardDescriptionKeywordsFromDb, getCreditCardTransactionsFromDb } from './dbInterface';
 import { StatementType } from '../types/enums';
 
@@ -26,27 +26,49 @@ export const getCategorizedTransactions = async (request: Request, response: Res
   const endDate: string | null = request.query.endDate ? request.query.endDate as string : null;
 
   const checkingAccountTransactions: CheckingAccountTransactionEntity[] = await getCheckingAccountTransactionsFromDb(startDate, endDate);
-  const checkingAccountCategories: CategoryEntity[] = await getCheckingAccountCategoriesFromDb();
-  const checkingAccountNameKeywords: CheckingAccountNameKeywordEntity[] = await getCheckingAccountNameKeywordsFromDb();
-  const categorizedCheckingAccountTransactions: CategorizedTransactionEntity[] = 
-    categorizeCheckingAccountTransactions(checkingAccountTransactions, checkingAccountCategories, checkingAccountNameKeywords);
-
+  const checkingAccountCategories: CategoryEntity[] = await getCreditCardCategoriesFromDb();
+  const checkingAccountNameKeywords: CreditCardDescriptionKeywordEntity[] = await getCreditCardDescriptionKeywordsFromDb();
+  const categorizedCheckingAccountTransactions: CategorizedCheckingAccountTransactionEntity[] = categorizeCheckingAccountTransactions(checkingAccountTransactions, checkingAccountCategories, checkingAccountNameKeywords);
 
   const creditCardTransactions: CreditCardTransactionEntity[] = await getCreditCardTransactionsFromDb(startDate, endDate);
   const creditCardCategories: CategoryEntity[] = await getCreditCardCategoriesFromDb();
   const creditCardDescriptionKeywords: CreditCardDescriptionKeywordEntity[] = await getCreditCardDescriptionKeywordsFromDb();
   const categorizedTransactions: CategorizedTransactionEntity[] = categorizeTransactions(creditCardTransactions, creditCardCategories, creditCardDescriptionKeywords);
 
+  const transactions: TransactionEntity[] = [];
   let sum = 0;
-  for (const categorizedTransaction of categorizedTransactions) {
+
+  for (const categorizedTransaction of categorizedCheckingAccountTransactions) {
+    const transaction: TransactionEntity = {
+      id: categorizedTransaction.transaction.id,
+      statementId: categorizedTransaction.transaction.statementId,
+      transactionDate: categorizedTransaction.transaction.transactionDate,
+      amount: categorizedTransaction.transaction.amount,
+      description: categorizedTransaction.transaction.name,
+      category: categorizedTransaction.category.keyword,
+    };
+    transactions.push(transaction);
     sum += categorizedTransaction.transaction.amount;
   }
+  for (const categorizedTransaction of categorizedTransactions) {
+    const transaction: TransactionEntity = {
+      id: categorizedTransaction.transaction.id,
+      statementId: categorizedTransaction.transaction.statementId,
+      transactionDate: categorizedTransaction.transaction.transactionDate,
+      amount: categorizedTransaction.transaction.amount,
+      description: categorizedTransaction.transaction.description,
+      category: categorizedTransaction.category.keyword,
+    };
+    transactions.push(transaction);
+    sum += categorizedTransaction.transaction.amount;
+  }
+
   sum = roundTo(-sum, 2)
 
   const categorizedStatementData: CategorizedStatementData = {
     startDate,
     endDate,
-    transactions: categorizedTransactions,
+    transactions,
     total: sum,
   };
 
@@ -56,33 +78,63 @@ export const getCategorizedTransactions = async (request: Request, response: Res
 const categorizeCheckingAccountTransactions = (
   transactions: CheckingAccountTransactionEntity[],
   checkingAccountCategories: CategoryEntity[],
-  checkingAccountNameKeywords: CheckingAccountNameKeywordEntity[]): CategorizedTransactionEntity[] => {
+  checkingAccountNameKeywords: CheckingAccountNameKeywordEntity[]): CategorizedCheckingAccountTransactionEntity[] => {
 
-  const categorizedTransactions: CategorizedTransactionEntity[] = [];
+  const categorizedTransactions: CategorizedCheckingAccountTransactionEntity[] = [];
 
   let sum: number = 0;
 
-  // for (const transaction of transactions) {
-  //   const category: CategoryEntity | null = categorizeCheckingAccountTransaction(transaction, checkingAccountCategories, checkingAccountNameKeywords);
-  //   if (!isNil(category)) {
-  //     const categorizedTransaction: CategorizedTransactionEntity = {
-  //       transaction,
-  //       category,
-  //     };
-  //     categorizedTransactions.push(categorizedTransaction);
+  for (const transaction of transactions) {
+    const category: CategoryEntity | null = categorizeCheckingAccountTransaction(transaction, checkingAccountCategories, checkingAccountNameKeywords);
+    if (!isNil(category)) {
+      const categorizedTransaction: CategorizedCheckingAccountTransactionEntity = {
+        transaction,
+        category,
+      };
+      categorizedTransactions.push(categorizedTransaction);
 
-  //     sum += transaction.amount;
-  //   }
-  // }
+      sum += transaction.amount;
+    }
+    else {
+      console.log('uncategorized transaction: ', transaction.name);
+    }
+  }
 
-  console.log('sum: ', sum);
-  const sumString: string = (-sum).toFixed(2);
-  console.log('sumString: ', sumString);
-  const roundedSum: number = roundTo(-sum, 2);
-  console.log('roundedSum: ', roundedSum);
+  // console.log('sum: ', sum);
+  // const sumString: string = (-sum).toFixed(2);
+  // console.log('sumString: ', sumString);
+  // const roundedSum: number = roundTo(-sum, 2);
+  // console.log('roundedSum: ', roundedSum);
 
   return categorizedTransactions;
 };
+
+const categorizeCheckingAccountTransaction = (
+  transaction: CheckingAccountTransactionEntity,
+  checkingAccountCategories: CategoryEntity[],
+  checkingAccountNameKeywords: CheckingAccountNameKeywordEntity[]): CategoryEntity | null => {
+
+  for (const nameKeyword of checkingAccountNameKeywords) {
+    if (transaction.name.includes(nameKeyword.keyword)) {
+      const checkingAccountNameKeywordEntity: CheckingAccountNameKeywordEntity = nameKeyword;
+      const categoryId = checkingAccountNameKeywordEntity.categoryId;
+      for (const category of checkingAccountCategories) {
+        if (category.id === categoryId) {
+          return category;
+        }
+      }
+    }
+  }
+
+  for (const category of checkingAccountCategories) {
+    if (transaction.transactionType === category.keyword) {
+      return category;
+    }
+  }
+
+  // console.log(transaction);
+  return null;
+}
 
 const categorizeTransactions = (
   transactions: CreditCardTransactionEntity[],
