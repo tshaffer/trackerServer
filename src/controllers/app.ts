@@ -6,9 +6,31 @@ import multer from 'multer';
 import * as fs from 'fs';
 import Papa from 'papaparse';
 import { isBoolean, isNil, isNumber } from 'lodash';
-import { CategorizedStatementData, CheckingAccountTransactionEntity, CategoryEntity, CreditCardDescriptionKeywordEntity, CreditCardTransactionEntity, StatementEntity, CategorizedTransactionEntity, CheckingAccountNameKeywordEntity, CategorizedCheckingAccountTransactionEntity, TransactionEntity } from 'entities';
-import { addCategoryKeywordToDb, addCategoryToDb, addCheckingAccountTransactionsToDb, addCreditCardTransactionsToDb, addStatementToDb, getCheckingAccountCategoriesFromDb, getCheckingAccountNameKeywordsFromDb, getCheckingAccountTransactionsFromDb, getCreditCardCategoriesFromDb, getCreditCardDescriptionKeywordsFromDb, getCreditCardTransactionsFromDb } from './dbInterface';
+import {
+  CategorizedStatementData,
+  CheckingAccountTransactionEntity,
+  CategoryEntity,
+  CategoryKeywordEntity,
+  CreditCardTransactionEntity,
+  StatementEntity,
+  CategorizedTransactionEntity,
+  CheckingAccountNameKeywordEntity,
+  CategorizedCheckingAccountTransactionEntity,
+  TransactionEntity
+} from 'entities';
+import {
+  addCategoryKeywordToDb,
+  addCategoryToDb,
+  addCheckingAccountTransactionsToDb,
+  addCreditCardTransactionsToDb,
+  addStatementToDb,
+  getCheckingAccountTransactionsFromDb,
+  getCreditCardCategoriesFromDb,
+  getCategoryKeywordsFromDb,
+  getCreditCardTransactionsFromDb
+} from './dbInterface';
 import { StatementType } from '../types/enums';
+import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
   console.log('getVersion');
@@ -25,15 +47,15 @@ export const getCategorizedTransactions = async (request: Request, response: Res
   const startDate: string | null = request.query.startDate ? request.query.startDate as string : null;
   const endDate: string | null = request.query.endDate ? request.query.endDate as string : null;
 
+  const categoryKeywords: CategoryKeywordEntity[] = await getCategoryKeywordsFromDb();
+
   const checkingAccountTransactions: CheckingAccountTransactionEntity[] = await getCheckingAccountTransactionsFromDb(startDate, endDate);
   const checkingAccountCategories: CategoryEntity[] = await getCreditCardCategoriesFromDb();
-  const checkingAccountNameKeywords: CreditCardDescriptionKeywordEntity[] = await getCreditCardDescriptionKeywordsFromDb();
-  const categorizedCheckingAccountTransactions: CategorizedCheckingAccountTransactionEntity[] = categorizeCheckingAccountTransactions(checkingAccountTransactions, checkingAccountCategories, checkingAccountNameKeywords);
+  const categorizedCheckingAccountTransactions: CategorizedCheckingAccountTransactionEntity[] = categorizeCheckingAccountTransactions(checkingAccountTransactions, checkingAccountCategories, categoryKeywords);
 
   const creditCardTransactions: CreditCardTransactionEntity[] = await getCreditCardTransactionsFromDb(startDate, endDate);
   const creditCardCategories: CategoryEntity[] = await getCreditCardCategoriesFromDb();
-  const creditCardDescriptionKeywords: CreditCardDescriptionKeywordEntity[] = await getCreditCardDescriptionKeywordsFromDb();
-  const categorizedTransactions: CategorizedTransactionEntity[] = categorizeTransactions(creditCardTransactions, creditCardCategories, creditCardDescriptionKeywords);
+  const categorizedTransactions: CategorizedTransactionEntity[] = categorizeTransactions(creditCardTransactions, creditCardCategories, categoryKeywords);
 
   const transactions: TransactionEntity[] = [];
   let sum = 0;
@@ -139,7 +161,7 @@ const categorizeCheckingAccountTransaction = (
 const categorizeTransactions = (
   transactions: CreditCardTransactionEntity[],
   creditCardCategories: CategoryEntity[],
-  creditCardDescriptionKeywords: CreditCardDescriptionKeywordEntity[]): CategorizedTransactionEntity[] => {
+  creditCardDescriptionKeywords: CategoryKeywordEntity[]): CategorizedTransactionEntity[] => {
 
   const categorizedTransactions: CategorizedTransactionEntity[] = [];
 
@@ -167,20 +189,15 @@ const categorizeTransactions = (
   return categorizedTransactions;
 };
 
-const roundTo = (num: number, precision: number): number => {
-  const factor = Math.pow(10, precision)
-  return Math.round(num * factor) / factor
-}
-
 const categorizeTransaction = (
   transaction: CreditCardTransactionEntity,
   creditCardCategories: CategoryEntity[],
-  creditCardDescriptionKeywords: CreditCardDescriptionKeywordEntity[]): CategoryEntity | null => {
+  categoryKeywords: CategoryKeywordEntity[]): CategoryEntity | null => {
 
-  for (const descriptionKeyword of creditCardDescriptionKeywords) {
+  for (const descriptionKeyword of categoryKeywords) {
     if (transaction.description.includes(descriptionKeyword.keyword)) {
-      const creditCardDescriptionKeywordEntity: CreditCardDescriptionKeywordEntity = descriptionKeyword;
-      const categoryId = creditCardDescriptionKeywordEntity.categoryId;
+      const categoryKeywordEntity: CategoryKeywordEntity = descriptionKeyword;
+      const categoryId = categoryKeywordEntity.categoryId;
       for (const category of creditCardCategories) {
         if (category.id === categoryId) {
           return category;
@@ -397,47 +414,6 @@ const processCheckingAccountStatement = async (statementId: string, csvTransacti
   return Promise.resolve(errorList);
 }
 
-const getIsoDate = (dateStr: string): string => {
-  const year = dateStr.substring(6, 10);
-  const yearValue = parseInt(year);
-  const month = dateStr.substring(0, 2);
-  const monthIndex = parseInt(month) - 1;
-  const day = dateStr.substring(3, 5);
-  const dayValue = parseInt(day);
-  const date = new Date(yearValue, monthIndex, dayValue);
-  return date.toISOString();
-}
-
-function isValidDate(dateString: string): boolean {
-  // Check if the string can be parsed into a date
-  const date = new Date(dateString);
-
-  // Check if the date is valid
-  if (isNaN(date.getTime())) {
-    return false;
-  }
-
-  // Additional check to ensure the parsed date matches the input string
-  // This prevents cases where invalid dates like "2023-02-30" are parsed as valid dates
-  const [month, day, year] = dateString.split('/').map(Number);
-
-  if (year !== date.getFullYear() || month !== (date.getMonth() + 1) || day !== date.getDate()) {
-    return false;
-  }
-
-  return true;
-}
-
-const isEmptyLine = (lineOfInput: any[]): boolean => {
-  const columnValues: any[] = Object.values(lineOfInput);
-  for (const columnValue of columnValues) {
-    if (!isBoolean(columnValue)) {
-      return false;
-    }
-  }
-  return true;
-}
-
 const transform = (arg1: any, arg2: any) => {
   if (arg1 === '') {
     return 'FALSE';
@@ -482,7 +458,7 @@ export const addCategory = async (request: Request, response: Response, next: an
 export const addCategoryKeyword = async (request: Request, response: Response, next: any) => {
   const { keyword, categoryId } = request.body;
   const id: string = uuidv4();
-  const creditCardDescriptionKeywordEntity: CreditCardDescriptionKeywordEntity = {
+  const creditCardDescriptionKeywordEntity: CategoryKeywordEntity = {
     id,
     keyword,
     categoryId,

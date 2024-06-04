@@ -1,14 +1,17 @@
-import { CategoryEntity, CheckingAccountNameKeywordEntity, CheckingAccountTransactionEntity, CreditCardDescriptionKeywordEntity, CreditCardTransactionEntity, StatementEntity } from 'entities';
+import {
+  CategoryEntity,
+  CheckingAccountTransactionEntity,
+  CategoryKeywordEntity,
+  CreditCardTransactionEntity,
+  StatementEntity
+} from 'entities';
 
 import {
   getCreditCardTransactionModel,
   getCheckingAccountTransactionModel,
   getCategoryModel,
-  getCreditCardDescriptionKeywordModel,
-  getStatementModel,
-  getCheckingAccountNameKeywordModel,
-  getCheckingAccountCategoryModel
-} from '../models';
+  getCategoryKeywordModel,
+  getStatementModel} from '../models';
 
 export const addStatementToDb = async (statement: StatementEntity): Promise<void> => {
   const statementModel = getStatementModel();
@@ -115,24 +118,23 @@ export const getCreditCardCategoriesFromDb = async (
   return categories;
 }
 
-export const getCreditCardDescriptionKeywordsFromDb = async (
-): Promise<CreditCardDescriptionKeywordEntity[]> => {
+export const getCategoryKeywordsFromDb = async (
+): Promise<CategoryKeywordEntity[]> => {
 
-  console.log('getCreditCardDescriptionKeywordsFromDb: ');
+  console.log('getCategoryKeywordsFromDb: ');
 
-  const creditCardDescriptionKeywordModel = getCreditCardDescriptionKeywordModel();
+  const categoryKeywordModel = getCategoryKeywordModel();
 
-  const query = creditCardDescriptionKeywordModel.find();
+  const query = categoryKeywordModel.find();
 
   const documents: any = await query.exec();
-  const descriptionKeywords: CreditCardDescriptionKeywordEntity[] = [];
+  const descriptionKeywords: CategoryKeywordEntity[] = [];
   for (const document of documents) {
-    const descriptionKeyword: CreditCardDescriptionKeywordEntity = document.toObject() as CreditCardDescriptionKeywordEntity;
+    const descriptionKeyword: CategoryKeywordEntity = document.toObject() as CategoryKeywordEntity;
     descriptionKeywords.push(descriptionKeyword);
   }
   return descriptionKeywords;
 }
-
 
 export const addCategoryToDb = async (category: CategoryEntity): Promise<void> => {
   const categoryModel = getCategoryModel();
@@ -147,9 +149,9 @@ export const addCategoryToDb = async (category: CategoryEntity): Promise<void> =
     });
 }
 
-export const addCategoryKeywordToDb = async (creditCardDescriptionKeywordEntity: CreditCardDescriptionKeywordEntity): Promise<void> => {
-  const creditCardDescriptionKeywordModel = getCreditCardDescriptionKeywordModel();
-  return creditCardDescriptionKeywordModel.collection.insertOne(creditCardDescriptionKeywordEntity)
+export const addCategoryKeywordToDb = async (categoryKeywordEntity: CategoryKeywordEntity): Promise<void> => {
+  const categoryKeywordModel = getCategoryKeywordModel();
+  return categoryKeywordModel.collection.insertOne(categoryKeywordEntity)
     .then(() => {
       return Promise.resolve();
     })
@@ -159,42 +161,4 @@ export const addCategoryKeywordToDb = async (creditCardDescriptionKeywordEntity:
       return null;
     });
 }
-
-export const getCheckingAccountNameKeywordsFromDb = async (
-): Promise<CheckingAccountNameKeywordEntity[]> => {
-
-  console.log('getCheckingAccountNameKeywordsFromDb: ');
-
-  const checkingAccountNameKeywordModel = getCheckingAccountNameKeywordModel();
-
-  const query = checkingAccountNameKeywordModel.find();
-
-  const documents: any = await query.exec();
-  const descriptionKeywords: CheckingAccountNameKeywordEntity[] = [];
-  for (const document of documents) {
-    const descriptionKeyword: CheckingAccountNameKeywordEntity = document.toObject() as CheckingAccountNameKeywordEntity;
-    descriptionKeywords.push(descriptionKeyword);
-  }
-  return descriptionKeywords;
-}
-
-export const getCheckingAccountCategoriesFromDb = async (
-): Promise<CategoryEntity[]> => {
-
-  console.log('getCheckingAccountCategoriesFromDb: ');
-
-  const checkingAccountCategoryModel = getCheckingAccountCategoryModel();
-
-  const query = checkingAccountCategoryModel.find();
-
-  const documents: any = await query.exec();
-  const categories: CategoryEntity[] = [];
-  for (const document of documents) {
-    const category: CategoryEntity = document.toObject() as CategoryEntity;
-    categories.push(category);
-  }
-  return categories;
-}
-
-
 

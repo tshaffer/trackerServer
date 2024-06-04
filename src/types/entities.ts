@@ -49,7 +49,7 @@ export interface CategoryEntity {
   keyword: string;
 }
 
-export interface CreditCardDescriptionKeywordEntity {
+export interface CategoryKeywordEntity {
   id: string;
   keyword: string;
   categoryId: string;
