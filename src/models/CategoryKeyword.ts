@@ -14,7 +14,7 @@ const CategoryKeywordSchema = new Schema(
 );
 
 export const getCategoryKeywordModel = () => {
-  const categoryKeywordModel = connection.model('creditcarddescriptionkeyword', CategoryKeywordSchema);
+  const categoryKeywordModel = connection.model('categorykeyword', CategoryKeywordSchema);
   return categoryKeywordModel;
 }
 
