@@ -460,8 +460,7 @@ export const addCategory = async (request: Request, response: Response, next: an
 }
 
 export const addCategoryKeyword = async (request: Request, response: Response, next: any) => {
-  const { keyword, categoryId } = request.body;
-  const id: string = uuidv4();
+  const { id, keyword, categoryId } = request.body;
   const creditCardDescriptionKeywordEntity: CategoryKeywordEntity = {
     id,
     keyword,
