@@ -25,7 +25,7 @@ import {
   addCreditCardTransactionsToDb,
   addStatementToDb,
   getCheckingAccountTransactionsFromDb,
-  getCreditCardCategoriesFromDb,
+  getCategoriesFromDb,
   getCategoryKeywordsFromDb,
   getCreditCardTransactionsFromDb
 } from './dbInterface';
@@ -40,6 +40,12 @@ export const getVersion = (request: Request, response: Response, next: any) => {
   response.json(data);
 };
 
+export const getCategories = async (request: Request, response: Response, next: any) => {
+  console.log('getCategories');
+  const categories: CategoryEntity[] = await getCategoriesFromDb();
+  response.json(categories);
+};
+
 export const getCategorizedTransactions = async (request: Request, response: Response, next: any) => {
 
   console.log('getCategorizedTransactions');
@@ -47,15 +53,14 @@ export const getCategorizedTransactions = async (request: Request, response: Res
   const startDate: string | null = request.query.startDate ? request.query.startDate as string : null;
   const endDate: string | null = request.query.endDate ? request.query.endDate as string : null;
 
+  const categories: CategoryEntity[] = await getCategoriesFromDb();
   const categoryKeywords: CategoryKeywordEntity[] = await getCategoryKeywordsFromDb();
 
   const checkingAccountTransactions: CheckingAccountTransactionEntity[] = await getCheckingAccountTransactionsFromDb(startDate, endDate);
-  const checkingAccountCategories: CategoryEntity[] = await getCreditCardCategoriesFromDb();
-  const categorizedCheckingAccountTransactions: CategorizedCheckingAccountTransactionEntity[] = categorizeCheckingAccountTransactions(checkingAccountTransactions, checkingAccountCategories, categoryKeywords);
+  const categorizedCheckingAccountTransactions: CategorizedCheckingAccountTransactionEntity[] = categorizeCheckingAccountTransactions(checkingAccountTransactions, categories, categoryKeywords);
 
   const creditCardTransactions: CreditCardTransactionEntity[] = await getCreditCardTransactionsFromDb(startDate, endDate);
-  const creditCardCategories: CategoryEntity[] = await getCreditCardCategoriesFromDb();
-  const categorizedTransactions: CategorizedTransactionEntity[] = categorizeTransactions(creditCardTransactions, creditCardCategories, categoryKeywords);
+  const categorizedTransactions: CategorizedTransactionEntity[] = categorizeTransactions(creditCardTransactions, categories, categoryKeywords);
 
   const transactions: TransactionEntity[] = [];
   let sum = 0;
@@ -160,7 +165,7 @@ const categorizeCheckingAccountTransaction = (
 
 const categorizeTransactions = (
   transactions: CreditCardTransactionEntity[],
-  creditCardCategories: CategoryEntity[],
+  categories: CategoryEntity[],
   creditCardDescriptionKeywords: CategoryKeywordEntity[]): CategorizedTransactionEntity[] => {
 
   const categorizedTransactions: CategorizedTransactionEntity[] = [];
@@ -168,7 +173,7 @@ const categorizeTransactions = (
   let sum: number = 0;
 
   for (const transaction of transactions) {
-    const category: CategoryEntity | null = categorizeTransaction(transaction, creditCardCategories, creditCardDescriptionKeywords);
+    const category: CategoryEntity | null = categorizeTransaction(transaction, categories, creditCardDescriptionKeywords);
     if (!isNil(category)) {
       const categorizedTransaction: CategorizedTransactionEntity = {
         transaction,
@@ -191,14 +196,14 @@ const categorizeTransactions = (
 
 const categorizeTransaction = (
   transaction: CreditCardTransactionEntity,
-  creditCardCategories: CategoryEntity[],
+  categories: CategoryEntity[],
   categoryKeywords: CategoryKeywordEntity[]): CategoryEntity | null => {
 
   for (const descriptionKeyword of categoryKeywords) {
     if (transaction.description.includes(descriptionKeyword.keyword)) {
       const categoryKeywordEntity: CategoryKeywordEntity = descriptionKeyword;
       const categoryId = categoryKeywordEntity.categoryId;
-      for (const category of creditCardCategories) {
+      for (const category of categories) {
         if (category.id === categoryId) {
           return category;
         }
@@ -206,7 +211,7 @@ const categorizeTransaction = (
     }
   }
 
-  for (const category of creditCardCategories) {
+  for (const category of categories) {
     if (transaction.category === category.keyword) {
       return category;
     }

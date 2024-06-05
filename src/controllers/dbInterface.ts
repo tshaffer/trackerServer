@@ -11,7 +11,8 @@ import {
   getCheckingAccountTransactionModel,
   getCategoryModel,
   getCategoryKeywordModel,
-  getStatementModel} from '../models';
+  getStatementModel
+} from '../models';
 
 export const addStatementToDb = async (statement: StatementEntity): Promise<void> => {
   const statementModel = getStatementModel();
@@ -100,10 +101,10 @@ export const getCreditCardTransactionsFromDb = async (
   return transactions;
 }
 
-export const getCreditCardCategoriesFromDb = async (
+export const getCategoriesFromDb = async (
 ): Promise<CategoryEntity[]> => {
 
-  console.log('getCreditCardCategoriesFromDb: ');
+  console.log('getCategoriesFromDb: ');
 
   const creditCardCategoryModel = getCategoryModel();
 

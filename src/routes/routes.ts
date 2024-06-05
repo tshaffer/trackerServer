@@ -9,6 +9,7 @@ import {
   uploadStatement,
   addCategory,
   addCategoryKeyword,
+  getCategories,
 } from '../controllers';
 
 export class Routes {
@@ -26,6 +27,7 @@ export class Routes {
     app.get('/build/bundle.js.map', getBundleMap);
 
     app.get('/api/v1/version', getVersion);
+    app.get('/api/v1/categories', getCategories);
     app.get('/api/v1/categorizedTransactions', getCategorizedTransactions);
 
     app.post('/api/v1/creditCardStatement', uploadStatement);
