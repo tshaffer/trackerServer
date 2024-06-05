@@ -5,7 +5,7 @@ import { version } from '../version';
 import multer from 'multer';
 import * as fs from 'fs';
 import Papa from 'papaparse';
-import { isBoolean, isNil, isNumber } from 'lodash';
+import { isNil, isNumber } from 'lodash';
 import {
   CategorizedStatementData,
   CheckingAccountTransactionEntity,
@@ -445,10 +445,9 @@ const getCheckingAccountStatementDate = (dateStr: string): string => {
 };
 
 export const addCategory = async (request: Request, response: Response, next: any) => {
-  const { keyword } = request.body;
-  const categoryId: string = uuidv4();
+  const { id, keyword } = request.body;
   const categoryEntity: CategoryEntity = {
-    id: categoryId,
+    id,
     keyword,
   };
   await addCategoryToDb(categoryEntity);
