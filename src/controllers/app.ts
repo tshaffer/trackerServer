@@ -14,7 +14,6 @@ import {
   CreditCardTransactionEntity,
   StatementEntity,
   CategorizedTransactionEntity,
-  CheckingAccountNameKeywordEntity,
   CategorizedCheckingAccountTransactionEntity,
   TransactionEntity
 } from 'entities';
@@ -29,7 +28,7 @@ import {
   getCategoryKeywordsFromDb,
   getCreditCardTransactionsFromDb
 } from './dbInterface';
-import { StatementType } from '../types/enums';
+import { DisregardLevel, StatementType } from '../types/enums';
 import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
@@ -42,7 +41,13 @@ export const getVersion = (request: Request, response: Response, next: any) => {
 
 export const getCategories = async (request: Request, response: Response, next: any) => {
   console.log('getCategories');
-  const categories: CategoryEntity[] = await getCategoriesFromDb();
+  const allCategories: CategoryEntity[] = await getCategoriesFromDb();
+  const categories: CategoryEntity[] = [];
+  for (const category of allCategories) {
+    if (category.disregardLevel === DisregardLevel.None) {
+      categories.push(category);
+    }
+  }
   response.json(categories);
 };
 
@@ -53,7 +58,14 @@ export const getCategorizedTransactions = async (request: Request, response: Res
   const startDate: string | null = request.query.startDate ? request.query.startDate as string : null;
   const endDate: string | null = request.query.endDate ? request.query.endDate as string : null;
 
-  const categories: CategoryEntity[] = await getCategoriesFromDb();
+  const allCategories: CategoryEntity[] = await getCategoriesFromDb();
+  const categories: CategoryEntity[] = [];
+  for (const category of allCategories) {
+    if (category.disregardLevel === DisregardLevel.None) {
+      categories.push(category);
+    }
+  }
+
   const categoryKeywords: CategoryKeywordEntity[] = await getCategoryKeywordsFromDb();
 
   const checkingAccountTransactions: CheckingAccountTransactionEntity[] = await getCheckingAccountTransactionsFromDb(startDate, endDate);
@@ -104,15 +116,15 @@ export const getCategorizedTransactions = async (request: Request, response: Res
 
 const categorizeCheckingAccountTransactions = (
   transactions: CheckingAccountTransactionEntity[],
-  checkingAccountCategories: CategoryEntity[],
-  checkingAccountNameKeywords: CheckingAccountNameKeywordEntity[]): CategorizedCheckingAccountTransactionEntity[] => {
+  categories: CategoryEntity[],
+  categoryKeywords: CategoryKeywordEntity[]): CategorizedCheckingAccountTransactionEntity[] => {
 
   const categorizedTransactions: CategorizedCheckingAccountTransactionEntity[] = [];
 
   let sum: number = 0;
 
   for (const transaction of transactions) {
-    const category: CategoryEntity | null = categorizeCheckingAccountTransaction(transaction, checkingAccountCategories, checkingAccountNameKeywords);
+    const category: CategoryEntity | null = categorizeCheckingAccountTransaction(transaction, categories, categoryKeywords);
     if (!isNil(category)) {
       const categorizedTransaction: CategorizedCheckingAccountTransactionEntity = {
         transaction,
@@ -138,14 +150,14 @@ const categorizeCheckingAccountTransactions = (
 
 const categorizeCheckingAccountTransaction = (
   transaction: CheckingAccountTransactionEntity,
-  checkingAccountCategories: CategoryEntity[],
-  checkingAccountNameKeywords: CheckingAccountNameKeywordEntity[]): CategoryEntity | null => {
+  categories: CategoryEntity[],
+  categoryKeywords: CategoryKeywordEntity[]): CategoryEntity | null => {
 
-  for (const nameKeyword of checkingAccountNameKeywords) {
+  for (const nameKeyword of categoryKeywords) {
     if (transaction.name.includes(nameKeyword.keyword)) {
-      const checkingAccountNameKeywordEntity: CheckingAccountNameKeywordEntity = nameKeyword;
-      const categoryId = checkingAccountNameKeywordEntity.categoryId;
-      for (const category of checkingAccountCategories) {
+      const categoryKeywordEntity: CategoryKeywordEntity = nameKeyword;
+      const categoryId = categoryKeywordEntity.categoryId;
+      for (const category of categories) {
         if (category.id === categoryId) {
           return category;
         }
@@ -153,7 +165,7 @@ const categorizeCheckingAccountTransaction = (
     }
   }
 
-  for (const category of checkingAccountCategories) {
+  for (const category of categories) {
     if (transaction.transactionType === category.keyword) {
       return category;
     }
@@ -166,14 +178,14 @@ const categorizeCheckingAccountTransaction = (
 const categorizeTransactions = (
   transactions: CreditCardTransactionEntity[],
   categories: CategoryEntity[],
-  creditCardDescriptionKeywords: CategoryKeywordEntity[]): CategorizedTransactionEntity[] => {
+  categoryKeywordEntities: CategoryKeywordEntity[]): CategorizedTransactionEntity[] => {
 
   const categorizedTransactions: CategorizedTransactionEntity[] = [];
 
   let sum: number = 0;
 
   for (const transaction of transactions) {
-    const category: CategoryEntity | null = categorizeTransaction(transaction, categories, creditCardDescriptionKeywords);
+    const category: CategoryEntity | null = categorizeTransaction(transaction, categories, categoryKeywordEntities);
     if (!isNil(category)) {
       const categorizedTransaction: CategorizedTransactionEntity = {
         transaction,
@@ -454,6 +466,7 @@ export const addCategory = async (request: Request, response: Response, next: an
   const categoryEntity: CategoryEntity = {
     id,
     keyword,
+    disregardLevel: DisregardLevel.None
   };
   await addCategoryToDb(categoryEntity);
   return response.status(200).send();
@@ -461,11 +474,11 @@ export const addCategory = async (request: Request, response: Response, next: an
 
 export const addCategoryKeyword = async (request: Request, response: Response, next: any) => {
   const { id, keyword, categoryId } = request.body;
-  const creditCardDescriptionKeywordEntity: CategoryKeywordEntity = {
+  const categoryKeywordEntity: CategoryKeywordEntity = {
     id,
     keyword,
     categoryId,
   };
-  await addCategoryKeywordToDb(creditCardDescriptionKeywordEntity);
+  await addCategoryKeywordToDb(categoryKeywordEntity);
   return response.status(200).send();
 }

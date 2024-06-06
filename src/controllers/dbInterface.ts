@@ -129,12 +129,12 @@ export const getCategoryKeywordsFromDb = async (
   const query = categoryKeywordModel.find();
 
   const documents: any = await query.exec();
-  const descriptionKeywords: CategoryKeywordEntity[] = [];
+  const categoryKeywordEntities: CategoryKeywordEntity[] = [];
   for (const document of documents) {
-    const descriptionKeyword: CategoryKeywordEntity = document.toObject() as CategoryKeywordEntity;
-    descriptionKeywords.push(descriptionKeyword);
+    const categoryKeywordEntity: CategoryKeywordEntity = document.toObject() as CategoryKeywordEntity;
+    categoryKeywordEntities.push(categoryKeywordEntity);
   }
-  return descriptionKeywords;
+  return categoryKeywordEntities;
 }
 
 export const addCategoryToDb = async (category: CategoryEntity): Promise<void> => {

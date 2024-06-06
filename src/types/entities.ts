@@ -1,4 +1,4 @@
-import { StatementType } from "enums";
+import { DisregardLevel, StatementType } from "enums";
 
 export interface CategorizedStatementData {
   startDate: string;
@@ -47,6 +47,7 @@ export interface StatementEntity {
 export interface CategoryEntity {
   id: string
   keyword: string;
+  disregardLevel: DisregardLevel;
 }
 
 export interface CategoryKeywordEntity {
@@ -58,12 +59,6 @@ export interface CategoryKeywordEntity {
 export interface CategorizedTransactionEntity {
   transaction: CreditCardTransactionEntity;
   category: CategoryEntity;
-}
-
-export interface CheckingAccountNameKeywordEntity {
-  id: string;
-  keyword: string;
-  categoryId: string;
 }
 
 export interface CategorizedCheckingAccountTransactionEntity {
