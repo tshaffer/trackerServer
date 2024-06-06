@@ -7,34 +7,29 @@ export interface CategorizedStatementData {
   total: number;
 }
 
-export interface CategorizedTransactionEntity {
+export interface CategorizedTransactionEntity extends TransactionEntity {
+  description: string;
+  category: string;
+}
+
+export interface TransactionEntity {
   id: string;
   statementId: string;
   transactionDate: string;
   amount: number;
   description: string;
-  category: string;
 }
 
-export interface CreditCardTransactionEntity {
-  id: string;
-  statementId: string;
-  transactionDate: string;
+export interface CreditCardTransactionEntity extends TransactionEntity {
   postDate: string;
-  description: string;
   category: string;
   type: string;
-  amount: number;
 }
 
-export interface CheckingAccountTransactionEntity {
-  id: string;
-  statementId: string;
-  transactionDate: string;
+export interface CheckingAccountTransactionEntity extends TransactionEntity {
   transactionType: string;
   name: string;
   memo: string;
-  amount: number;
 }
 
 export interface StatementEntity {
@@ -54,15 +49,5 @@ export interface CategoryKeywordEntity {
   id: string;
   keyword: string;
   categoryId: string;
-}
-
-export interface CategorizedCreditCardTransactionEntity {
-  transaction: CreditCardTransactionEntity;
-  category: CategoryEntity;
-}
-
-export interface CategorizedCheckingAccountTransactionEntity {
-  transaction: CheckingAccountTransactionEntity;
-  category: CategoryEntity;
 }
 
