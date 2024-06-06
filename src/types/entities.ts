@@ -3,11 +3,11 @@ import { DisregardLevel, StatementType } from "enums";
 export interface CategorizedStatementData {
   startDate: string;
   endDate: string;
-  transactions: TransactionEntity[];
+  transactions: CategorizedTransactionEntity[];
   total: number;
 }
 
-export interface TransactionEntity {
+export interface CategorizedTransactionEntity {
   id: string;
   statementId: string;
   transactionDate: string;
@@ -56,7 +56,7 @@ export interface CategoryKeywordEntity {
   categoryId: string;
 }
 
-export interface CategorizedTransactionEntity {
+export interface CategorizedCreditCardTransactionEntity {
   transaction: CreditCardTransactionEntity;
   category: CategoryEntity;
 }
