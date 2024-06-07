@@ -75,7 +75,9 @@ export const getCategorizedTransactions = async (request: Request, response: Res
   const reviewedTransactionEntities: ReviewedTransactionEntities = categorizeTransactions(allTransactions, categories, categoryKeywords);
   const categorizedTransactions: CategorizedTransactionEntity[] = reviewedTransactionEntities.categorizedTransactions;
   const uncategorizedTransactions: BankTransactionEntity[] = reviewedTransactionEntities.uncategorizedTransactions;
-  const ignoredTransactions: BankTransactionEntity[] = getIgnoredTransactions(uncategorizedTransactions, "9a5cf18d-e308-4f9f-8dc4-e026dfb7833b", categoryKeywords);
+  // TEDTODO - fetch the ignoredCategoryId from the database; support multiple ignored categories
+  const unidentifiedBankTransactionEntities: BankTransactionEntity[] = getUnidentifiedTransactions(uncategorizedTransactions, "9a5cf18d-e308-4f9f-8dc4-e026dfb7833b", categoryKeywords);
+  console.log('unidentifiedBankTransactionEntities: ', unidentifiedBankTransactionEntities);
 
   const transactions: CategorizedTransactionEntity[] = [];
   let sum = 0;
@@ -101,23 +103,23 @@ export const getCategorizedTransactions = async (request: Request, response: Res
   response.json(categorizedStatementData);
 };
 
-const getIgnoredTransactions = (
+const getUnidentifiedTransactions = (
   uncategorizedTransactions: BankTransactionEntity[],
   ignoredCategoryId: string,
   categoryKeywordEntities: CategoryKeywordEntity[],
 ): BankTransactionEntity[] => {
 
-  const ignoredBankTransactionEntities: BankTransactionEntity[] = [];
+  const unidentifiedBankTransactionEntities: BankTransactionEntity[] = [];
 
   for (const transaction of uncategorizedTransactions) {
-    if (isIgnoredTransaction(transaction, ignoredCategoryId, categoryKeywordEntities)) {
-      ignoredBankTransactionEntities.push(transaction);
+    if (isUnidentifiedTransaction(transaction, ignoredCategoryId, categoryKeywordEntities)) {
+      unidentifiedBankTransactionEntities.push(transaction);
     }
   }
-  return ignoredBankTransactionEntities;
+  return unidentifiedBankTransactionEntities;
 }
 
-const isIgnoredTransaction = (uncategorizedTransaction: BankTransactionEntity, ignoredCategoryId: string, categoryKeywords: CategoryKeywordEntity[]): boolean => {
+const isUnidentifiedTransaction = (uncategorizedTransaction: BankTransactionEntity, ignoredCategoryId: string, categoryKeywords: CategoryKeywordEntity[]): boolean => {
 
   const transactionDetails: string = uncategorizedTransaction.bankTransactionType === BankTransactionType.CreditCard ?
     (uncategorizedTransaction as CreditCardTransactionEntity).description : (uncategorizedTransaction as CheckingAccountTransactionEntity).name;
@@ -125,14 +127,15 @@ const isIgnoredTransaction = (uncategorizedTransaction: BankTransactionEntity, i
   for (const categoryKeyword of categoryKeywords) {
     if (transactionDetails.includes(categoryKeyword.keyword)) {
       if (ignoredCategoryId === categoryKeyword.categoryId) {
-        return true;
+        return false;
       }
     }
   }
 
-  console.log(uncategorizedTransaction);
-  return false;
+  // console.log(uncategorizedTransaction);
+  return true;
 }
+
 
 const categorizeTransactions = (
   transactions: BankTransactionEntity[],
@@ -202,7 +205,7 @@ const categorizeTransaction = (
     }
   }
 
-  console.log(transaction);
+  // console.log(transaction);
   return null;
 };
 
