@@ -14,7 +14,8 @@ import {
   CreditCardTransactionEntity,
   StatementEntity,
   CategorizedTransactionEntity,
-  BankTransactionEntity
+  BankTransactionEntity,
+  ReviewedTransactionEntities
 } from 'entities';
 import {
   addCategoryKeywordToDb,
@@ -71,8 +72,10 @@ export const getCategorizedTransactions = async (request: Request, response: Res
   const creditCardTransactions: BankTransactionEntity[] = await getCreditCardTransactionsFromDb(startDate, endDate);
   const allTransactions: BankTransactionEntity[] = checkingAccountTransactions.concat(creditCardTransactions);
 
-
-  const categorizedTransactions: CategorizedTransactionEntity[] = categorizeTransactions(allTransactions, categories, categoryKeywords);
+  const reviewedTransactionEntities: ReviewedTransactionEntities = categorizeTransactions(allTransactions, categories, categoryKeywords);
+  const categorizedTransactions: CategorizedTransactionEntity[] = reviewedTransactionEntities.categorizedTransactions;
+  const uncategorizedTransactions: BankTransactionEntity[] = reviewedTransactionEntities.uncategorizedTransactions;
+  const ignoredTransactions: BankTransactionEntity[] = getIgnoredTransactions(uncategorizedTransactions, "9a5cf18d-e308-4f9f-8dc4-e026dfb7833b", categoryKeywords);
 
   const transactions: CategorizedTransactionEntity[] = [];
   let sum = 0;
@@ -98,12 +101,47 @@ export const getCategorizedTransactions = async (request: Request, response: Res
   response.json(categorizedStatementData);
 };
 
+const getIgnoredTransactions = (
+  uncategorizedTransactions: BankTransactionEntity[],
+  ignoredCategoryId: string,
+  categoryKeywordEntities: CategoryKeywordEntity[],
+): BankTransactionEntity[] => {
+
+  const ignoredBankTransactionEntities: BankTransactionEntity[] = [];
+
+  for (const transaction of uncategorizedTransactions) {
+    if (isIgnoredTransaction(transaction, ignoredCategoryId, categoryKeywordEntities)) {
+      ignoredBankTransactionEntities.push(transaction);
+    }
+  }
+  return ignoredBankTransactionEntities;
+}
+
+const isIgnoredTransaction = (uncategorizedTransaction: BankTransactionEntity, ignoredCategoryId: string, categoryKeywords: CategoryKeywordEntity[]): boolean => {
+
+  const transactionDetails: string = uncategorizedTransaction.bankTransactionType === BankTransactionType.CreditCard ?
+    (uncategorizedTransaction as CreditCardTransactionEntity).description : (uncategorizedTransaction as CheckingAccountTransactionEntity).name;
+
+  for (const categoryKeyword of categoryKeywords) {
+    if (transactionDetails.includes(categoryKeyword.keyword)) {
+      if (ignoredCategoryId === categoryKeyword.categoryId) {
+        return true;
+      }
+    }
+  }
+
+  console.log(uncategorizedTransaction);
+  return false;
+}
+
 const categorizeTransactions = (
   transactions: BankTransactionEntity[],
   categories: CategoryEntity[],
-  categoryKeywordEntities: CategoryKeywordEntity[]): CategorizedTransactionEntity[] => {
+  categoryKeywordEntities: CategoryKeywordEntity[]
+): ReviewedTransactionEntities => {
 
   const categorizedTransactions: CategorizedTransactionEntity[] = [];
+  const uncategorizedTransactions: BankTransactionEntity[] = [];
 
   let sum: number = 0;
 
@@ -117,6 +155,8 @@ const categorizeTransactions = (
       categorizedTransactions.push(categorizedTransaction);
 
       sum += transaction.amount;
+    } else {
+      uncategorizedTransactions.push(transaction);
     }
   }
 
@@ -126,7 +166,10 @@ const categorizeTransactions = (
   const roundedSum: number = roundTo(-sum, 2);
   console.log('roundedSum: ', roundedSum);
 
-  return categorizedTransactions;
+  return {
+    categorizedTransactions,
+    uncategorizedTransactions
+  };
 };
 
 const categorizeTransaction = (

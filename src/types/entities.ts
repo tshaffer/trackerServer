@@ -54,3 +54,9 @@ export interface CategoryKeywordEntity {
   categoryId: string;
 }
 
+export interface ReviewedTransactionEntities {
+  categorizedTransactions: CategorizedTransactionEntity[];
+  uncategorizedTransactions: BankTransactionEntity[]
+}
+
+
