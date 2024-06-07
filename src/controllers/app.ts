@@ -14,7 +14,9 @@ import {
   CreditCardTransactionEntity,
   StatementEntity,
   CategorizedTransactionEntity,
-  TransactionEntity
+  RawTransactionEntity,
+  // GenericTransactionEntity,
+  BankTransactionEntity
 } from 'entities';
 import {
   addCategoryKeywordToDb,
@@ -27,7 +29,7 @@ import {
   getCategoryKeywordsFromDb,
   getCreditCardTransactionsFromDb
 } from './dbInterface';
-import { DisregardLevel, StatementType } from '../types/enums';
+import { BankTransactionType, DisregardLevel, StatementType } from '../types/enums';
 import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
@@ -67,49 +69,23 @@ export const getCategorizedTransactions = async (request: Request, response: Res
 
   const categoryKeywords: CategoryKeywordEntity[] = await getCategoryKeywordsFromDb();
 
-  const checkingAccountTransactions: CheckingAccountTransactionEntity[] = await getCheckingAccountTransactionsFromDb(startDate, endDate);
-  const creditCardTransactions: CreditCardTransactionEntity[] = await getCreditCardTransactionsFromDb(startDate, endDate);
+  const checkingAccountTransactions: BankTransactionEntity[] = await getCheckingAccountTransactionsFromDb(startDate, endDate);
+  const creditCardTransactions: BankTransactionEntity[] = await getCreditCardTransactionsFromDb(startDate, endDate);
+  const allTransactions: BankTransactionEntity[] = checkingAccountTransactions.concat(creditCardTransactions);
 
-  const allTransactions: TransactionEntity[] = [];
-  for (const transaction of checkingAccountTransactions) {
-    const transactionEntity: TransactionEntity = {
-      id: transaction.id,
-      statementId: transaction.statementId,
-      transactionDate: transaction.transactionDate,
-      amount: transaction.amount,
-      description: transaction.name,
-    }
-    allTransactions.push(transactionEntity);
-  }
-  for (const transaction of creditCardTransactions) {
-    const transactionEntity: TransactionEntity = {
-      id: transaction.id,
-      statementId: transaction.statementId,
-      transactionDate: transaction.transactionDate,
-      amount: transaction.amount,
-      description: transaction.description,
-    }
-    allTransactions.push(transactionEntity);
-  }
 
-  const categorizedCheckingAccountTransactions: CategorizedTransactionEntity[] = categorizeTransactions(checkingAccountTransactions, categories, categoryKeywords);
-  const categorizedCreditCardTransactions: CategorizedTransactionEntity[] = categorizeTransactions(creditCardTransactions, categories, categoryKeywords);
-  const categorizedTransactions: CategorizedTransactionEntity[] = categorizedCheckingAccountTransactions.concat(categorizedCreditCardTransactions);
+  const categorizedTransactions: CategorizedTransactionEntity[] = categorizeTransactions(allTransactions, categories, categoryKeywords);
 
   const transactions: CategorizedTransactionEntity[] = [];
   let sum = 0;
 
   for (const categorizedTransaction of categorizedTransactions) {
     const transaction: CategorizedTransactionEntity = {
-      id: categorizedTransaction.id,
-      statementId: categorizedTransaction.statementId,
-      transactionDate: categorizedTransaction.transactionDate,
-      amount: categorizedTransaction.amount,
-      description: categorizedTransaction.description,
-      category: categorizedTransaction.category,
+      bankTransactionEntity: categorizedTransaction.bankTransactionEntity,
+      categoryEntity: categorizedTransaction.categoryEntity,
     };
     transactions.push(transaction);
-    sum += categorizedTransaction.amount;
+    sum += transaction.bankTransactionEntity.amount;
   }
 
   sum = roundTo(-sum, 2)
@@ -125,7 +101,7 @@ export const getCategorizedTransactions = async (request: Request, response: Res
 };
 
 const categorizeTransactions = (
-  transactions: TransactionEntity[],
+  transactions: BankTransactionEntity[],
   categories: CategoryEntity[],
   categoryKeywordEntities: CategoryKeywordEntity[]): CategorizedTransactionEntity[] => {
 
@@ -137,12 +113,8 @@ const categorizeTransactions = (
     const category: CategoryEntity | null = categorizeTransaction(transaction, categories, categoryKeywordEntities);
     if (!isNil(category)) {
       const categorizedTransaction: CategorizedTransactionEntity = {
-        id: transaction.id,
-        statementId: transaction.statementId,
-        transactionDate: transaction.transactionDate,
-        amount: transaction.amount,
-        description: transaction.description,
-        category: category.keyword,
+        bankTransactionEntity: transaction,
+        categoryEntity: category,
       };
       categorizedTransactions.push(categorizedTransaction);
 
@@ -160,12 +132,15 @@ const categorizeTransactions = (
 };
 
 const categorizeTransaction = (
-  transaction: TransactionEntity,
+  transaction: BankTransactionEntity,
   categories: CategoryEntity[],
   categoryKeywords: CategoryKeywordEntity[]): CategoryEntity | null => {
 
+  const transactionDetails: string = transaction.bankTransactionType === BankTransactionType.CreditCard ?
+    (transaction as CreditCardTransactionEntity).description : (transaction as CheckingAccountTransactionEntity).name;
+
   for (const categoryKeyword of categoryKeywords) {
-    if (transaction.description.includes(categoryKeyword.keyword)) {
+    if (transactionDetails.includes(categoryKeyword.keyword)) {
       const categoryKeywordEntity: CategoryKeywordEntity = categoryKeyword;
       const categoryId = categoryKeywordEntity.categoryId;
       for (const category of categories) {
@@ -176,10 +151,12 @@ const categorizeTransaction = (
     }
   }
 
-  if (!isNil((transaction as CreditCardTransactionEntity).category)) {
-    for (const category of categories) {
-      if ((transaction as CreditCardTransactionEntity).category === category.keyword) {
-        return category;
+  if (transaction.bankTransactionType === BankTransactionType.CreditCard) {
+    if (!isNil((transaction as unknown as CreditCardTransactionEntity).category)) {
+      for (const category of categories) {
+        if ((transaction as unknown as CreditCardTransactionEntity).category === category.keyword) {
+          return category;
+        }
       }
     }
   }
@@ -327,6 +304,7 @@ const processCreditCardStatement = async (statementId: string, csvTransactions: 
       category,
       type,
       amount,
+      bankTransactionType: BankTransactionType.CreditCard,
     };
 
     transactions.push(creditCardTransaction);
@@ -374,8 +352,7 @@ const processCheckingAccountStatement = async (statementId: string, csvTransacti
       name,
       memo,
       amount,
-      // bogus
-      description: name,
+      bankTransactionType: BankTransactionType.Checking,
     };
 
     transactions.push(checkingAccountTransaction);
