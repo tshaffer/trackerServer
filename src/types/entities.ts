@@ -7,7 +7,7 @@ export interface CategorizedStatementData {
   total: number;
 }
 
-export interface RawTransactionEntity {
+interface RawTransactionEntity {
   id: string;
   statementId: string;
   transactionDate: string;

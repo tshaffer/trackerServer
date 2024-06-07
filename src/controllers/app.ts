@@ -14,8 +14,6 @@ import {
   CreditCardTransactionEntity,
   StatementEntity,
   CategorizedTransactionEntity,
-  RawTransactionEntity,
-  // GenericTransactionEntity,
   BankTransactionEntity
 } from 'entities';
 import {
