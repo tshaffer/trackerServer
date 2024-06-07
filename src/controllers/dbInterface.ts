@@ -13,6 +13,7 @@ import {
   getCategoryKeywordModel,
   getStatementModel
 } from '../models';
+import { BankTransactionType } from '../types/enums';
 
 export const addStatementToDb = async (statement: StatementEntity): Promise<void> => {
   const statementModel = getStatementModel();
@@ -72,6 +73,7 @@ export const getCheckingAccountTransactionsFromDb = async (
   const transactions: CheckingAccountTransactionEntity[] = [];
   for (const document of documents) {
     const transaction: CheckingAccountTransactionEntity = document.toObject() as any;
+    transaction.bankTransactionType = BankTransactionType.Checking;
     transactions.push(transaction);
   }
   return transactions;
@@ -96,6 +98,7 @@ export const getCreditCardTransactionsFromDb = async (
   const transactions: CreditCardTransactionEntity[] = [];
   for (const document of documents) {
     const transaction: CreditCardTransactionEntity = document.toObject() as CreditCardTransactionEntity;
+    transaction.bankTransactionType = BankTransactionType.CreditCard;
     transactions.push(transaction);
   }
   return transactions;
