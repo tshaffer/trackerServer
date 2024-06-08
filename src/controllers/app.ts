@@ -76,8 +76,8 @@ export const getCategorizedTransactions = async (request: Request, response: Res
   const categorizedTransactions: CategorizedTransactionEntity[] = reviewedTransactionEntities.categorizedTransactions;
   const uncategorizedTransactions: BankTransactionEntity[] = reviewedTransactionEntities.uncategorizedTransactions;
   // TEDTODO - fetch the ignoredCategoryId from the database; support multiple ignored categories
-  const unidentifiedBankTransactionEntities: BankTransactionEntity[] = getUnidentifiedTransactions(uncategorizedTransactions, "9a5cf18d-e308-4f9f-8dc4-e026dfb7833b", categoryKeywords);
-  console.log('unidentifiedBankTransactionEntities: ', unidentifiedBankTransactionEntities);
+  const unidentifiedBankTransactions: BankTransactionEntity[] = getUnidentifiedTransactions(uncategorizedTransactions, "9a5cf18d-e308-4f9f-8dc4-e026dfb7833b", categoryKeywords);
+  console.log('unidentifiedBankTransactionEntities: ', unidentifiedBankTransactions);
 
   const transactions: CategorizedTransactionEntity[] = [];
   let sum = 0;
@@ -98,6 +98,7 @@ export const getCategorizedTransactions = async (request: Request, response: Res
     endDate,
     transactions,
     total: sum,
+    unidentifiedBankTransactions,
   };
 
   response.json(categorizedStatementData);
