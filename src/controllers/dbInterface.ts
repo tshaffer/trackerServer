@@ -218,7 +218,10 @@ export const getDuplicateCreditCardTransactionsDb = async (): Promise<CreditCard
   const query = creditCardTransactionModel.aggregate([
     {
       $group: {
-        _id: "$amount",
+        _id: {
+          amount: "$amount",
+          postDate: "$postDate"
+        },
         count: { $sum: 1 },
         docs: { $push: "$$ROOT" }
       }
