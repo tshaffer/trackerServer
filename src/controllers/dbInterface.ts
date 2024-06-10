@@ -166,3 +166,106 @@ export const addCategoryKeywordToDb = async (categoryKeywordEntity: CategoryKeyw
     });
 }
 
+/*
+const mongoose = require('mongoose');
+
+const creditCardTransactionSchema = new mongoose.Schema({
+    id: String,
+    postDate: String,
+    amount: Number
+});
+
+const CreditCardTransaction = mongoose.model('CreditCardTransaction', creditCardTransactionSchema);
+
+mongoose.connect('mongodb://localhost:27017/yourdbname', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => {
+    console.log('Connected to MongoDB');
+
+    return CreditCardTransaction.aggregate([
+        {
+            $group: {
+                _id: "$amount",
+                count: { $sum: 1 },
+                docs: { $push: "$$ROOT" }
+            }
+        },
+        {
+            $match: {
+                count: { $gt: 1 }
+            }
+        },
+        {
+            $unwind: "$docs"
+        },
+        {
+            $replaceRoot: { newRoot: "$docs" }
+        }
+    ]);
+}).then(results => {
+    console.log(results);
+}).catch(error => {
+    console.error(error);
+}).finally(() => {
+    mongoose.connection.close();
+});
+*/
+
+export const getDuplicateCreditCardTransactionsDb = async (): Promise<CreditCardTransactionEntity[]> => {
+  const creditCardTransactionModel = getCreditCardTransactionModel();
+
+  const query = creditCardTransactionModel.aggregate([
+    {
+      $group: {
+        _id: "$amount",
+        count: { $sum: 1 },
+        docs: { $push: "$$ROOT" }
+      }
+    },
+    {
+      $match: {
+        count: { $gt: 1 }
+      }
+    },
+    {
+      $unwind: "$docs"
+    },
+    {
+      $replaceRoot: { newRoot: "$docs" }
+    }
+  ]);
+
+  // const documents: any = await query.exec();
+  // const transactions: CreditCardTransactionEntity[] = [];
+  // for (const document of documents) {
+  //   const transaction: CreditCardTransactionEntity = document.toObject() as CreditCardTransactionEntity;
+  //   transactions.push(transaction);
+  // }
+  // return transactions;
+  const transactions: CreditCardTransactionEntity[] = await query.exec();
+  return transactions;
+}
+
+/*
+db.creditcardtransactions.aggregate([
+    {
+        $group: {
+            _id: "$amount",
+            count: { $sum: 1 },
+            docs: { $push: "$$ROOT" }
+        }
+    },
+    {
+        $match: {
+            count: { $gt: 1 }
+        }
+    },
+    {
+        $unwind: "$docs"
+    },
+    {
+        $replaceRoot: { newRoot: "$docs" }
+    }
+])
+*/

@@ -10,6 +10,7 @@ import {
   addCategory,
   addCategoryKeyword,
   getCategories,
+  getDuplicateCreditCardTransactions,
 } from '../controllers';
 
 export class Routes {
@@ -29,7 +30,7 @@ export class Routes {
     app.get('/api/v1/version', getVersion);
     app.get('/api/v1/categories', getCategories);
     app.get('/api/v1/categorizedTransactions', getCategorizedTransactions);
-
+    app.get('/api/v1/duplicateCreditCardTransactions', getDuplicateCreditCardTransactions);
     app.post('/api/v1/creditCardStatement', uploadStatement);
 
     app.post('/api/v1/addCategory', addCategory);

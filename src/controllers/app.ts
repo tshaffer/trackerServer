@@ -26,7 +26,8 @@ import {
   getCheckingAccountTransactionsFromDb,
   getCategoriesFromDb,
   getCategoryKeywordsFromDb,
-  getCreditCardTransactionsFromDb
+  getCreditCardTransactionsFromDb,
+  getDuplicateCreditCardTransactionsDb
 } from './dbInterface';
 import { BankTransactionType, DisregardLevel, StatementType } from '../types/enums';
 import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
@@ -264,7 +265,7 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
 
   const statementId: string = uuidv4();
 
-  if (originalFileName.startsWith('Chase7011_Activity')) {
+  if (originalFileName.startsWith('Chase7011_Activity') || originalFileName.startsWith('Chase5014_Activity')) {
 
     console.log('Chase credit card statement');
 
@@ -461,3 +462,10 @@ export const addCategoryKeyword = async (request: Request, response: Response, n
   await addCategoryKeywordToDb(categoryKeywordEntity);
   return response.status(200).send();
 }
+
+export const getDuplicateCreditCardTransactions = async (request: Request, response: Response, next: any) => {
+  console.log('getDuplicateCreditCardTransactions');
+  const reditCardTransactions: CreditCardTransactionEntity[] = await getDuplicateCreditCardTransactionsDb();
+  response.json(reditCardTransactions);
+};
+
