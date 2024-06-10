@@ -11,6 +11,7 @@ import {
   addCategoryKeyword,
   getCategories,
   getDuplicateCreditCardTransactions,
+  removeDuplicateCreditCardTransactions,
 } from '../controllers';
 
 export class Routes {
@@ -35,5 +36,6 @@ export class Routes {
 
     app.post('/api/v1/addCategory', addCategory);
     app.post('/api/v1/addCategoryKeyword', addCategoryKeyword);
+    app.post('/api/v1/removeDuplicateCreditCardTransactions', removeDuplicateCreditCardTransactions);
   }
 }

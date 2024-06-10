@@ -205,3 +205,17 @@ export const getDuplicateCreditCardTransactionsDb = async (): Promise<CreditCard
   const transactions: CreditCardTransactionEntity[] = await query.exec();
   return transactions;
 }
+
+export const removeDuplicateCreditCardTransactionsDb = async (idsToDelete: string[]): Promise<void> => {
+  const creditCardTransactionModel = getCreditCardTransactionModel();
+  return creditCardTransactionModel.deleteMany({ _id: { $in: idsToDelete } })
+    .then((deleteResult) => {
+      console.log('Deleted documents count:', deleteResult.deletedCount);
+      return Promise.resolve();
+    })
+    .catch((error: any) => {
+      console.log('db deleteMany error: ', error);
+      debugger;
+      return null;
+    });
+}

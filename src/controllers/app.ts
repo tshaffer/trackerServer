@@ -27,7 +27,8 @@ import {
   getCategoriesFromDb,
   getCategoryKeywordsFromDb,
   getCreditCardTransactionsFromDb,
-  getDuplicateCreditCardTransactionsDb
+  getDuplicateCreditCardTransactionsDb,
+  removeDuplicateCreditCardTransactionsDb
 } from './dbInterface';
 import { BankTransactionType, DisregardLevel, StatementType } from '../types/enums';
 import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
@@ -465,7 +466,7 @@ export const addCategoryKeyword = async (request: Request, response: Response, n
 
 const getDuplicateCreditCardTransactionsInternal = async () => {
 
-  console.log('getDuplicateCreditCardTransactions');
+  console.log('getDuplicateCreditCardTransactionsInternal');
 
   const duplicateCreditCardTransactions: CreditCardTransactionEntity[] = [];
 
@@ -487,62 +488,21 @@ const getDuplicateCreditCardTransactionsInternal = async () => {
     }
   }
 
-  const idsToDelete: string[] = duplicateCreditCardTransactions.map(doc => (doc as any)._id);
-  console.log('idsToDelete: ', idsToDelete);
-
   return duplicateCreditCardTransactions;
 };
 
 export const getDuplicateCreditCardTransactions = async (request: Request, response: Response, next: any) => {
-  await getDuplicateCreditCardTransactionsInternal();
+  console.log('getDuplicateCreditCardTransactions');
+  const duplicateCreditCardTransactions = await getDuplicateCreditCardTransactionsInternal();
+  response.json(duplicateCreditCardTransactions);
+}
+
+export const removeDuplicateCreditCardTransactions = async (request: Request, response: Response, next: any) => {
+  console.log('removeDuplicateCreditCardTransactions');
+  const duplicateCreditCardTransactions = await getDuplicateCreditCardTransactionsInternal();
+  const idsToDelete: string[] = duplicateCreditCardTransactions.map(doc => (doc as any)._id);
+  console.log('idsToDelete: ', idsToDelete);
+  await removeDuplicateCreditCardTransactionsDb(idsToDelete);
   return response.status(200).send();
 }
-/*
-const mongoose = require('mongoose');
 
-const creditCardTransactionSchema = new mongoose.Schema({
-    id: String,
-    postDate: String,
-    amount: Number
-});
-
-const CreditCardTransaction = mongoose.model('CreditCardTransaction', creditCardTransactionSchema);
-
-mongoose.connect('mongodb://localhost:27017/yourdbname', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
-    console.log('Connected to MongoDB');
-
-    return CreditCardTransaction.aggregate([
-        {
-            $group: {
-                _id: "$amount",
-                count: { $sum: 1 },
-                docs: { $push: "$$ROOT" }
-            }
-        },
-        {
-            $match: {
-                count: { $gt: 1 }
-            }
-        },
-        {
-            $unwind: "$docs"
-        },
-        {
-            $replaceRoot: { newRoot: "$docs" }
-        }
-    ]);
-}).then(results => {
-    const idsToDelete = results.map(doc => doc._id);
-
-    return CreditCardTransaction.deleteMany({ _id: { $in: idsToDelete } });
-}).then(deleteResult => {
-    console.log('Deleted documents count:', deleteResult.deletedCount);
-}).catch(error => {
-    console.error(error);
-}).finally(() => {
-    mongoose.connection.close();
-});
-*/
