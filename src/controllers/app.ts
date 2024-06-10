@@ -464,8 +464,32 @@ export const addCategoryKeyword = async (request: Request, response: Response, n
 }
 
 export const getDuplicateCreditCardTransactions = async (request: Request, response: Response, next: any) => {
+
   console.log('getDuplicateCreditCardTransactions');
-  const reditCardTransactions: CreditCardTransactionEntity[] = await getDuplicateCreditCardTransactionsDb();
-  response.json(reditCardTransactions);
+
+  const duplicateCreditCardTransactions: CreditCardTransactionEntity[] = [];
+
+  const creditCardTransactions: CreditCardTransactionEntity[] = await getDuplicateCreditCardTransactionsDb();
+
+  const creditCardTransactionMap: Map<string, CreditCardTransactionEntity> = new Map();
+
+  for (const creditCardTransaction of creditCardTransactions) {
+    const key = creditCardTransaction.postDate +  creditCardTransaction.description + creditCardTransaction.amount.toString();
+
+    const existingCreditCardTransactionEntity: CreditCardTransactionEntity | undefined = creditCardTransactionMap.get(key);
+
+    if (isNil(existingCreditCardTransactionEntity)) {
+      creditCardTransactionMap.set(key, creditCardTransaction);
+    } else {
+      if (existingCreditCardTransactionEntity.statementId !== creditCardTransaction.statementId) {
+        // console.log('duplicate credit card transaction: ', creditCardTransaction);
+        // console.log('duplicate credit card transaction: ', existingCreditCardTransactionEntity);
+        console.log(existingCreditCardTransactionEntity.postDate);
+        duplicateCreditCardTransactions.push(creditCardTransaction);
+      }
+    }
+  }
+
+  response.json(duplicateCreditCardTransactions);
 };
 
