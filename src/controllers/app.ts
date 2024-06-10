@@ -463,7 +463,7 @@ export const addCategoryKeyword = async (request: Request, response: Response, n
   return response.status(200).send();
 }
 
-export const getDuplicateCreditCardTransactions = async (request: Request, response: Response, next: any) => {
+const getDuplicateCreditCardTransactionsInternal = async () => {
 
   console.log('getDuplicateCreditCardTransactions');
 
@@ -482,14 +482,67 @@ export const getDuplicateCreditCardTransactions = async (request: Request, respo
       creditCardTransactionMap.set(key, creditCardTransaction);
     } else {
       if (existingCreditCardTransactionEntity.statementId !== creditCardTransaction.statementId) {
-        // console.log('duplicate credit card transaction: ', creditCardTransaction);
-        // console.log('duplicate credit card transaction: ', existingCreditCardTransactionEntity);
-        console.log(existingCreditCardTransactionEntity.postDate);
         duplicateCreditCardTransactions.push(creditCardTransaction);
       }
     }
   }
 
-  response.json(duplicateCreditCardTransactions);
+  const idsToDelete: string[] = duplicateCreditCardTransactions.map(doc => (doc as any)._id);
+  console.log('idsToDelete: ', idsToDelete);
+
+  return duplicateCreditCardTransactions;
 };
 
+export const getDuplicateCreditCardTransactions = async (request: Request, response: Response, next: any) => {
+  await getDuplicateCreditCardTransactionsInternal();
+  return response.status(200).send();
+}
+/*
+const mongoose = require('mongoose');
+
+const creditCardTransactionSchema = new mongoose.Schema({
+    id: String,
+    postDate: String,
+    amount: Number
+});
+
+const CreditCardTransaction = mongoose.model('CreditCardTransaction', creditCardTransactionSchema);
+
+mongoose.connect('mongodb://localhost:27017/yourdbname', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => {
+    console.log('Connected to MongoDB');
+
+    return CreditCardTransaction.aggregate([
+        {
+            $group: {
+                _id: "$amount",
+                count: { $sum: 1 },
+                docs: { $push: "$$ROOT" }
+            }
+        },
+        {
+            $match: {
+                count: { $gt: 1 }
+            }
+        },
+        {
+            $unwind: "$docs"
+        },
+        {
+            $replaceRoot: { newRoot: "$docs" }
+        }
+    ]);
+}).then(results => {
+    const idsToDelete = results.map(doc => doc._id);
+
+    return CreditCardTransaction.deleteMany({ _id: { $in: idsToDelete } });
+}).then(deleteResult => {
+    console.log('Deleted documents count:', deleteResult.deletedCount);
+}).catch(error => {
+    console.error(error);
+}).finally(() => {
+    mongoose.connection.close();
+});
+*/
