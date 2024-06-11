@@ -477,7 +477,7 @@ const getDuplicateCreditCardTransactionsInternal = async () => {
   const creditCardTransactionMap: Map<string, CreditCardTransactionEntity> = new Map();
 
   for (const creditCardTransaction of creditCardTransactions) {
-    const key = creditCardTransaction.postDate +  creditCardTransaction.description + creditCardTransaction.amount.toString();
+    const key = creditCardTransaction.postDate + creditCardTransaction.description + creditCardTransaction.amount.toString();
 
     const existingCreditCardTransactionEntity: CreditCardTransactionEntity | undefined = creditCardTransactionMap.get(key);
 
@@ -510,8 +510,29 @@ export const removeDuplicateCreditCardTransactions = async (request: Request, re
 
 // add categories that are referenced in credit card transactions but do not already exist in the db
 export const addReferencedCategories = async (request: Request, response: Response, next: any) => {
-  // const creditCardTransactions: BankTransactionEntity[] = await getCreditCardTransactionsFromDb(startDate, endDate);
+
   const minMaxTransactionDates: MinMaxStartDates = await getMinMaxTransactionDatesFromDb();
-  console.log(minMaxTransactionDates);
+
+  const { minDate, maxDate } = minMaxTransactionDates;
+  const creditCardTransactions: CreditCardTransactionEntity[] = await getCreditCardTransactionsFromDb(minDate, maxDate);
+
+  const referencedCategories = new Set<string>();
+
+  creditCardTransactions.forEach((creditCardTransaction: CreditCardTransactionEntity) => {
+    if (creditCardTransaction.category.length > 0 && creditCardTransaction.category !== 'false') {
+      referencedCategories.add(creditCardTransaction.category);
+    }
+  });
+
+  const existingCategories: CategoryEntity[] = await getCategoriesFromDb();
+
+  const referencedArray: string[] = Array.from(referencedCategories);
+  const existingKeywords = new Set<string>(existingCategories.map(category => category.keyword));
+  const newCategories = referencedArray.filter(category => !existingKeywords.has(category));
+
+  console.log('existingCategories: ', existingCategories);
+  console.log('referencedCategories: ', referencedCategories);
+  console.log('newCategories: ', newCategories);
+
   return response.status(200).send();
 }
