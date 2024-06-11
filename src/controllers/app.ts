@@ -30,8 +30,9 @@ import {
   getCreditCardTransactionsFromDb,
   getDuplicateCreditCardTransactionsDb,
   removeDuplicateCreditCardTransactionsDb,
-  getMinMaxTransactionDatesFromDb,
-  addCategoriesToDb
+  getMinMaxCreditCardTransactionDatesFromDb,
+  addCategoriesToDb,
+  getMinMaxCheckingAccountTransactionDatesFromDb
 } from './dbInterface';
 import { BankTransactionType, DisregardLevel, StatementType } from '../types/enums';
 import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
@@ -512,7 +513,7 @@ export const removeDuplicateCreditCardTransactions = async (request: Request, re
 // add categories that are referenced in credit card transactions but do not already exist in the db
 export const addReferencedCategories = async (request: Request, response: Response, next: any) => {
 
-  const minMaxTransactionDates: MinMaxStartDates = await getMinMaxTransactionDatesFromDb();
+  const minMaxTransactionDates: MinMaxStartDates = await getMinMaxCreditCardTransactionDatesFromDb();
 
   const { minDate, maxDate } = minMaxTransactionDates;
   const creditCardTransactions: CreditCardTransactionEntity[] = await getCreditCardTransactionsFromDb(minDate, maxDate);
@@ -546,4 +547,16 @@ export const addReferencedCategories = async (request: Request, response: Respon
   await addCategoriesToDb(categoryEntities);
 
   return response.status(200).send();
+}
+
+export const getMinMaxCreditCardTransactionDates = async (request: Request, response: Response, next: any) => {
+  console.log('getMinMaxCreditCardTransactionDates');
+  const minMaxTransactionDates = await getMinMaxCreditCardTransactionDatesFromDb();
+  response.json(minMaxTransactionDates);
+}
+
+export const getMinMaxCheckingAccountTransactionDates = async (request: Request, response: Response, next: any) => {
+  console.log('getMinMaxCheckingAccountTransactionDates');
+  const minMaxTransactionDates = await getMinMaxCheckingAccountTransactionDatesFromDb();
+  response.json(minMaxTransactionDates);
 }

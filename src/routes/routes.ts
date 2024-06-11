@@ -13,6 +13,8 @@ import {
   getDuplicateCreditCardTransactions,
   removeDuplicateCreditCardTransactions,
   addReferencedCategories,
+  getMinMaxCheckingAccountTransactionDates,
+  getMinMaxCreditCardTransactionDates,
 } from '../controllers';
 
 export class Routes {
@@ -33,6 +35,9 @@ export class Routes {
     app.get('/api/v1/categories', getCategories);
     app.get('/api/v1/categorizedTransactions', getCategorizedTransactions);
     app.get('/api/v1/duplicateCreditCardTransactions', getDuplicateCreditCardTransactions);
+    app.get('/api/v1/minMaxCreditCardTransactionDates', getMinMaxCreditCardTransactionDates);
+    app.get('/api/v1/minMaxCheckingAccountTransactionDates', getMinMaxCheckingAccountTransactionDates);
+
     app.post('/api/v1/creditCardStatement', uploadStatement);
 
     app.post('/api/v1/addCategory', addCategory);

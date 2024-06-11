@@ -228,11 +228,17 @@ export const removeDuplicateCreditCardTransactionsDb = async (idsToDelete: strin
     });
 }
 
-export const getMinMaxTransactionDatesFromDb = async (): Promise<MinMaxStartDates> => {
+export const getMinMaxCreditCardTransactionDatesFromDb = async (): Promise<MinMaxStartDates> => {
+  return getMinMaxTransactionDatesFromDb(getCreditCardTransactionModel());
+}
 
-  const creditCardTransactionModel = getCreditCardTransactionModel();
+export const getMinMaxCheckingAccountTransactionDatesFromDb = async (): Promise<MinMaxStartDates> => {
+  return getMinMaxTransactionDatesFromDb(getCheckingAccountTransactionModel());
+}
 
-  const query = creditCardTransactionModel.aggregate([
+const getMinMaxTransactionDatesFromDb = async (model: any): Promise<MinMaxStartDates> => {
+
+  const query = model.aggregate([
     {
       $group: {
         _id: null,
@@ -249,5 +255,6 @@ export const getMinMaxTransactionDatesFromDb = async (): Promise<MinMaxStartDate
     maxDate: result[0].maxTransactionDate
   };
 }
+
 
 
