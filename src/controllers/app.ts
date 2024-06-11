@@ -30,7 +30,8 @@ import {
   getCreditCardTransactionsFromDb,
   getDuplicateCreditCardTransactionsDb,
   removeDuplicateCreditCardTransactionsDb,
-  getMinMaxTransactionDatesFromDb
+  getMinMaxTransactionDatesFromDb,
+  addCategoriesToDb
 } from './dbInterface';
 import { BankTransactionType, DisregardLevel, StatementType } from '../types/enums';
 import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
@@ -527,12 +528,22 @@ export const addReferencedCategories = async (request: Request, response: Respon
   const existingCategories: CategoryEntity[] = await getCategoriesFromDb();
 
   const referencedArray: string[] = Array.from(referencedCategories);
-  const existingKeywords = new Set<string>(existingCategories.map(category => category.keyword));
-  const newCategories = referencedArray.filter(category => !existingKeywords.has(category));
+  const existingKeywords: Set<string> = new Set<string>(existingCategories.map(category => category.keyword));
+  const newCategories: string[] = referencedArray.filter(category => !existingKeywords.has(category));
 
   console.log('existingCategories: ', existingCategories);
   console.log('referencedCategories: ', referencedCategories);
   console.log('newCategories: ', newCategories);
+
+  const categoryEntities: CategoryEntity[] = newCategories.map((keyword: string) => {
+    return {
+      id: uuidv4(),
+      keyword,
+      disregardLevel: DisregardLevel.None,
+    };
+  });
+
+  await addCategoriesToDb(categoryEntities);
 
   return response.status(200).send();
 }

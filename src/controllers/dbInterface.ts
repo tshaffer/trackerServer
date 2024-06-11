@@ -154,6 +154,20 @@ export const addCategoryToDb = async (category: CategoryEntity): Promise<void> =
     });
 }
 
+export const addCategoriesToDb = async (categories: CategoryEntity[]): Promise<any> => {
+  const categoryModel = getCategoryModel();
+  return categoryModel.collection.insertMany(categories)
+    .then((retVal: any) => {
+      return Promise.resolve(retVal);
+    })
+    .catch((error: any) => {
+      console.log('db add error: ', error);
+      debugger;
+      return null;
+    });
+}
+
+
 export const addCategoryKeywordToDb = async (categoryKeywordEntity: CategoryKeywordEntity): Promise<void> => {
   const categoryKeywordModel = getCategoryKeywordModel();
   return categoryKeywordModel.collection.insertOne(categoryKeywordEntity)
@@ -213,24 +227,6 @@ export const removeDuplicateCreditCardTransactionsDb = async (idsToDelete: strin
       return null;
     });
 }
-
-// export const getStatementsFromDb = async (
-// ): Promise<CategoryEntity[]> => {
-
-//   console.log('getCategoriesFromDb: ');
-
-//   const creditCardCategoryModel = getCategoryModel();
-
-//   const query = creditCardCategoryModel.find();
-
-//   const documents: any = await query.exec();
-//   const categories: CategoryEntity[] = [];
-//   for (const document of documents) {
-//     const category: CategoryEntity = document.toObject() as CategoryEntity;
-//     categories.push(category);
-//   }
-//   return categories;
-// }
 
 export const getMinMaxTransactionDatesFromDb = async (): Promise<MinMaxStartDates> => {
 
