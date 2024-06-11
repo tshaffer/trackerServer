@@ -195,13 +195,6 @@ export const getDuplicateCreditCardTransactionsDb = async (): Promise<CreditCard
     }
   ]);
 
-  // const documents: any = await query.exec();
-  // const transactions: CreditCardTransactionEntity[] = [];
-  // for (const document of documents) {
-  //   const transaction: CreditCardTransactionEntity = document.toObject() as CreditCardTransactionEntity;
-  //   transactions.push(transaction);
-  // }
-  // return transactions;
   const transactions: CreditCardTransactionEntity[] = await query.exec();
   return transactions;
 }
@@ -219,3 +212,45 @@ export const removeDuplicateCreditCardTransactionsDb = async (idsToDelete: strin
       return null;
     });
 }
+
+// export const getStatementsFromDb = async (
+// ): Promise<CategoryEntity[]> => {
+
+//   console.log('getCategoriesFromDb: ');
+
+//   const creditCardCategoryModel = getCategoryModel();
+
+//   const query = creditCardCategoryModel.find();
+
+//   const documents: any = await query.exec();
+//   const categories: CategoryEntity[] = [];
+//   for (const document of documents) {
+//     const category: CategoryEntity = document.toObject() as CategoryEntity;
+//     categories.push(category);
+//   }
+//   return categories;
+// }
+
+export const getMinMaxTransactionDatesFromDb = async (): Promise<{ minDate: string, maxDate: string }> => {
+  
+  const creditCardTransactionModel = getCreditCardTransactionModel();
+
+  const query = creditCardTransactionModel.aggregate([
+    {
+      $group: {
+        _id: null,
+        minTransactionDate: { $min: "$transactionDate" },
+        maxTransactionDate: { $max: "$transactionDate" }
+      }
+    }
+  ]);
+
+  const result: any = await query.exec();
+
+  return {
+    minDate: result[0].minTransactionDate,
+    maxDate: result[0].maxTransactionDate
+  };
+}
+
+

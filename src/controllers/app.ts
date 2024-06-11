@@ -28,7 +28,8 @@ import {
   getCategoryKeywordsFromDb,
   getCreditCardTransactionsFromDb,
   getDuplicateCreditCardTransactionsDb,
-  removeDuplicateCreditCardTransactionsDb
+  removeDuplicateCreditCardTransactionsDb,
+  getMinMaxTransactionDatesFromDb
 } from './dbInterface';
 import { BankTransactionType, DisregardLevel, StatementType } from '../types/enums';
 import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
@@ -506,3 +507,10 @@ export const removeDuplicateCreditCardTransactions = async (request: Request, re
   return response.status(200).send();
 }
 
+// add categories that are referenced in credit card transactions but do not already exist in the db
+export const addReferencedCategories = async (request: Request, response: Response, next: any) => {
+  // const creditCardTransactions: BankTransactionEntity[] = await getCreditCardTransactionsFromDb(startDate, endDate);
+  const minMaxTransactionDates: any = await getMinMaxTransactionDatesFromDb();
+  console.log(minMaxTransactionDates);
+  return response.status(200).send();
+}
