@@ -60,4 +60,8 @@ export interface ReviewedTransactionEntities {
   uncategorizedTransactions: BankTransactionEntity[]
 }
 
+export interface MinMaxStartDates {
+  minDate: string;
+  maxDate: string;
+}
 

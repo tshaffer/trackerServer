@@ -15,8 +15,9 @@ import {
   StatementEntity,
   CategorizedTransactionEntity,
   BankTransactionEntity,
-  ReviewedTransactionEntities
-} from 'entities';
+  ReviewedTransactionEntities,
+  MinMaxStartDates
+} from '../types';
 import {
   addCategoryKeywordToDb,
   addCategoryToDb,
@@ -510,7 +511,7 @@ export const removeDuplicateCreditCardTransactions = async (request: Request, re
 // add categories that are referenced in credit card transactions but do not already exist in the db
 export const addReferencedCategories = async (request: Request, response: Response, next: any) => {
   // const creditCardTransactions: BankTransactionEntity[] = await getCreditCardTransactionsFromDb(startDate, endDate);
-  const minMaxTransactionDates: any = await getMinMaxTransactionDatesFromDb();
+  const minMaxTransactionDates: MinMaxStartDates = await getMinMaxTransactionDatesFromDb();
   console.log(minMaxTransactionDates);
   return response.status(200).send();
 }
