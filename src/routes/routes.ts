@@ -15,6 +15,9 @@ import {
   addReferencedCategories,
   getMinMaxCheckingAccountTransactionDates,
   getMinMaxCreditCardTransactionDates,
+  getCategoryKeywords,
+  deleteCategoryKeyword,
+  updateCategoryKeyword,
 } from '../controllers';
 
 export class Routes {
@@ -33,6 +36,7 @@ export class Routes {
 
     app.get('/api/v1/version', getVersion);
     app.get('/api/v1/categories', getCategories);
+    app.get('/api/v1/categoryKeywords', getCategoryKeywords);
     app.get('/api/v1/categorizedTransactions', getCategorizedTransactions);
     app.get('/api/v1/duplicateCreditCardTransactions', getDuplicateCreditCardTransactions);
     app.get('/api/v1/minMaxCreditCardTransactionDates', getMinMaxCreditCardTransactionDates);
@@ -42,6 +46,8 @@ export class Routes {
 
     app.post('/api/v1/addCategory', addCategory);
     app.post('/api/v1/addCategoryKeyword', addCategoryKeyword);
+    app.post('/api/v1/updateCategoryKeyword', updateCategoryKeyword);
+    app.post('/api/v1/deleteCategoryKeyword', deleteCategoryKeyword);
     app.post('/api/v1/removeDuplicateCreditCardTransactions', removeDuplicateCreditCardTransactions);
     app.post('/api/v1/addReferencedCategories', addReferencedCategories);
   }

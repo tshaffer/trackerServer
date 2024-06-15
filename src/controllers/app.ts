@@ -32,13 +32,14 @@ import {
   removeDuplicateCreditCardTransactionsDb,
   getMinMaxCreditCardTransactionDatesFromDb,
   addCategoriesToDb,
-  getMinMaxCheckingAccountTransactionDatesFromDb
+  getMinMaxCheckingAccountTransactionDatesFromDb,
+  deleteCategoryKeywordFromDb,
+  updateCategoryKeywordInDb
 } from './dbInterface';
 import { BankTransactionType, DisregardLevel, StatementType } from '../types/enums';
 import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
-  console.log('getVersion');
   const data: any = {
     serverVersion: version,
   };
@@ -46,7 +47,6 @@ export const getVersion = (request: Request, response: Response, next: any) => {
 };
 
 export const getCategories = async (request: Request, response: Response, next: any) => {
-  console.log('getCategories');
   const allCategories: CategoryEntity[] = await getCategoriesFromDb();
   const categories: CategoryEntity[] = [];
   for (const category of allCategories) {
@@ -57,10 +57,12 @@ export const getCategories = async (request: Request, response: Response, next: 
   response.json(categories);
 };
 
+export const getCategoryKeywords = async (request: Request, response: Response, next: any) => {
+  const categoryKeywords: CategoryKeywordEntity[] = await getCategoryKeywordsFromDb();
+  response.json(categoryKeywords);
+};
+
 export const getCategorizedTransactions = async (request: Request, response: Response, next: any) => {
-
-  console.log('getCategorizedTransactions');
-
   const startDate: string | null = request.query.startDate ? request.query.startDate as string : null;
   const endDate: string | null = request.query.endDate ? request.query.endDate as string : null;
 
@@ -83,7 +85,6 @@ export const getCategorizedTransactions = async (request: Request, response: Res
   const uncategorizedTransactions: BankTransactionEntity[] = reviewedTransactionEntities.uncategorizedTransactions;
   // TEDTODO - fetch the ignoredCategoryId from the database; support multiple ignored categories
   const unidentifiedBankTransactions: BankTransactionEntity[] = getUnidentifiedTransactions(uncategorizedTransactions, "9a5cf18d-e308-4f9f-8dc4-e026dfb7833b", categoryKeywords);
-  console.log('unidentifiedBankTransactionEntities: ', unidentifiedBankTransactions);
 
   const transactions: CategorizedTransactionEntity[] = [];
   let sum = 0;
@@ -139,7 +140,6 @@ const isUnidentifiedTransaction = (uncategorizedTransaction: BankTransactionEnti
     }
   }
 
-  // console.log(uncategorizedTransaction);
   return true;
 }
 
@@ -169,12 +169,6 @@ const categorizeTransactions = (
       uncategorizedTransactions.push(transaction);
     }
   }
-
-  console.log('sum: ', sum);
-  const sumString: string = (-sum).toFixed(2);
-  console.log('sumString: ', sumString);
-  const roundedSum: number = roundTo(-sum, 2);
-  console.log('roundedSum: ', roundedSum);
 
   return {
     categorizedTransactions,
@@ -212,13 +206,10 @@ const categorizeTransaction = (
     }
   }
 
-  // console.log(transaction);
   return null;
 };
 
 export const uploadStatement = async (request: Request, response: Response, next: any) => {
-
-  console.log('uploadStatement');
 
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -240,7 +231,6 @@ export const uploadStatement = async (request: Request, response: Response, next
       console.log('nonMulterError: ', err);
       return response.status(500).json(err);
     }
-    console.log('return from upload: ', request.file);
 
     const originalFileName: string = request.file.originalname;
     // const filePath: string = path.join('public', 'creditCardStatement.csv');
@@ -272,8 +262,6 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
 
   if (originalFileName.startsWith('Chase7011_Activity') || originalFileName.startsWith('Chase5014_Activity')) {
 
-    console.log('Chase credit card statement');
-
     // Chase7011_Activity20220601_20221231_20240521.csv
     const startDateStr: string = originalFileName.substring(18, 26);
     const dbStartDate: string = getCreditCardStatementDate(startDateStr);
@@ -292,8 +280,6 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
   } else if (originalFileName.startsWith('Cash Reserve - 2137_')) {
 
     // Cash Reserve - 2137_07-01-2023_12-31-2023.csv
-    console.log('US Bank checking account');
-
     const startDateStr: string = originalFileName.substring(20, 30);
     const dbStartDate: string = getCheckingAccountStatementDate(startDateStr);
     const endDateStr: string = originalFileName.substring(31, 41);
@@ -317,8 +303,6 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
 const processCreditCardStatement = async (statementId: string, csvTransactions: any[]) => {
 
   const transactions: CreditCardTransactionEntity[] = [];
-
-  console.log('processCreditCardStatement');
 
   for (let i = 0; i < csvTransactions.length; i++) {
 
@@ -362,8 +346,6 @@ const processCreditCardStatement = async (statementId: string, csvTransactions: 
   }
 
   await addCreditCardTransactionsToDb(transactions);
-
-  console.log('processCreditCardStatement complete');
 }
 
 const processCheckingAccountStatement = async (statementId: string, csvTransactions: any[]): Promise<string[]> => {
@@ -468,9 +450,29 @@ export const addCategoryKeyword = async (request: Request, response: Response, n
   return response.status(200).send();
 }
 
-const getDuplicateCreditCardTransactionsInternal = async () => {
+export const updateCategoryKeyword = async (request: Request, response: Response, next: any) => {
+  const { id, keyword, categoryId } = request.body;
+  const categoryKeywordEntity: CategoryKeywordEntity = {
+    id,
+    keyword,
+    categoryId,
+  };
+  await updateCategoryKeywordInDb(categoryKeywordEntity);
+  return response.status(200).send();
+}
 
-  console.log('getDuplicateCreditCardTransactionsInternal');
+export const deleteCategoryKeyword = async (request: Request, response: Response, next: any) => {
+  const { id, keyword, categoryId } = request.body;
+  const categoryKeywordEntity: CategoryKeywordEntity = {
+    id,
+    keyword,
+    categoryId,
+  };
+  await deleteCategoryKeywordFromDb(categoryKeywordEntity);
+  return response.status(200).send();
+}
+
+const getDuplicateCreditCardTransactionsInternal = async () => {
 
   const duplicateCreditCardTransactions: CreditCardTransactionEntity[] = [];
 
@@ -496,16 +498,13 @@ const getDuplicateCreditCardTransactionsInternal = async () => {
 };
 
 export const getDuplicateCreditCardTransactions = async (request: Request, response: Response, next: any) => {
-  console.log('getDuplicateCreditCardTransactions');
   const duplicateCreditCardTransactions = await getDuplicateCreditCardTransactionsInternal();
   response.json(duplicateCreditCardTransactions);
 }
 
 export const removeDuplicateCreditCardTransactions = async (request: Request, response: Response, next: any) => {
-  console.log('removeDuplicateCreditCardTransactions');
   const duplicateCreditCardTransactions = await getDuplicateCreditCardTransactionsInternal();
   const idsToDelete: string[] = duplicateCreditCardTransactions.map(doc => (doc as any)._id);
-  console.log('idsToDelete: ', idsToDelete);
   await removeDuplicateCreditCardTransactionsDb(idsToDelete);
   return response.status(200).send();
 }
@@ -532,10 +531,6 @@ export const addReferencedCategories = async (request: Request, response: Respon
   const existingKeywords: Set<string> = new Set<string>(existingCategories.map(category => category.keyword));
   const newCategories: string[] = referencedArray.filter(category => !existingKeywords.has(category));
 
-  console.log('existingCategories: ', existingCategories);
-  console.log('referencedCategories: ', referencedCategories);
-  console.log('newCategories: ', newCategories);
-
   const categoryEntities: CategoryEntity[] = newCategories.map((keyword: string) => {
     return {
       id: uuidv4(),
@@ -550,13 +545,11 @@ export const addReferencedCategories = async (request: Request, response: Respon
 }
 
 export const getMinMaxCreditCardTransactionDates = async (request: Request, response: Response, next: any) => {
-  console.log('getMinMaxCreditCardTransactionDates');
   const minMaxTransactionDates = await getMinMaxCreditCardTransactionDatesFromDb();
   response.json(minMaxTransactionDates);
 }
 
 export const getMinMaxCheckingAccountTransactionDates = async (request: Request, response: Response, next: any) => {
-  console.log('getMinMaxCheckingAccountTransactionDates');
   const minMaxTransactionDates = await getMinMaxCheckingAccountTransactionDatesFromDb();
   response.json(minMaxTransactionDates);
 }

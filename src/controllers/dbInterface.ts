@@ -108,11 +108,9 @@ export const getCreditCardTransactionsFromDb = async (
 export const getCategoriesFromDb = async (
 ): Promise<CategoryEntity[]> => {
 
-  console.log('getCategoriesFromDb: ');
+  const categoryModel = getCategoryModel();
 
-  const creditCardCategoryModel = getCategoryModel();
-
-  const query = creditCardCategoryModel.find();
+  const query = categoryModel.find();
 
   const documents: any = await query.exec();
   const categories: CategoryEntity[] = [];
@@ -167,7 +165,6 @@ export const addCategoriesToDb = async (categories: CategoryEntity[]): Promise<a
     });
 }
 
-
 export const addCategoryKeywordToDb = async (categoryKeywordEntity: CategoryKeywordEntity): Promise<void> => {
   const categoryKeywordModel = getCategoryKeywordModel();
   return categoryKeywordModel.collection.insertOne(categoryKeywordEntity)
@@ -179,6 +176,21 @@ export const addCategoryKeywordToDb = async (categoryKeywordEntity: CategoryKeyw
       debugger;
       return null;
     });
+}
+
+export const updateCategoryKeywordInDb = async (categoryKeywordEntity: CategoryKeywordEntity): Promise<void> => {
+  const categoryKeywordModel = getCategoryKeywordModel();
+  const query = categoryKeywordModel.findOneAndUpdate(
+    { id: categoryKeywordEntity.id },
+    categoryKeywordEntity
+  )
+  await query.exec();
+}
+
+export const deleteCategoryKeywordFromDb = async (categoryKeywordEntity: CategoryKeywordEntity): Promise<void> => {
+  const categoryKeywordModel = getCategoryKeywordModel();
+  const filter = { id: categoryKeywordEntity.id };
+  await categoryKeywordModel.deleteOne(filter);
 }
 
 export const getDuplicateCreditCardTransactionsDb = async (): Promise<CreditCardTransactionEntity[]> => {
