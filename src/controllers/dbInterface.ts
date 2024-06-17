@@ -105,6 +105,22 @@ export const getCreditCardTransactionsFromDb = async (
   return transactions;
 }
 
+export const getStatementsFromDb = async (
+): Promise<StatementEntity[]> => {
+
+  const statementModel = getStatementModel();
+
+  const query = statementModel.find();
+
+  const documents: any = await query.exec();
+  const statements: StatementEntity[] = [];
+  for (const document of documents) {
+    const statement: StatementEntity = document.toObject() as StatementEntity;
+    statements.push(statement);
+  }
+  return statements;
+}
+
 export const getCategoriesFromDb = async (
 ): Promise<CategoryEntity[]> => {
 

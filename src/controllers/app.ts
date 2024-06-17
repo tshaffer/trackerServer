@@ -34,7 +34,8 @@ import {
   addCategoriesToDb,
   getMinMaxCheckingAccountTransactionDatesFromDb,
   deleteCategoryKeywordFromDb,
-  updateCategoryKeywordInDb
+  updateCategoryKeywordInDb,
+  getStatementsFromDb
 } from './dbInterface';
 import { BankTransactionType, DisregardLevel, StatementType } from '../types/enums';
 import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
@@ -60,6 +61,11 @@ export const getCategories = async (request: Request, response: Response, next: 
 export const getCategoryKeywords = async (request: Request, response: Response, next: any) => {
   const categoryKeywords: CategoryKeywordEntity[] = await getCategoryKeywordsFromDb();
   response.json(categoryKeywords);
+};
+
+export const getStatements = async (request: Request, response: Response, next: any) => {
+  const statements: StatementEntity[] = await getStatementsFromDb();
+  response.json(statements);
 };
 
 export const getCategorizedTransactions = async (request: Request, response: Response, next: any) => {

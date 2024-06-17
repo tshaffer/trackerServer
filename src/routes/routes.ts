@@ -18,6 +18,7 @@ import {
   getCategoryKeywords,
   deleteCategoryKeyword,
   updateCategoryKeyword,
+  getStatements,
 } from '../controllers';
 
 export class Routes {
@@ -37,6 +38,7 @@ export class Routes {
     app.get('/api/v1/version', getVersion);
     app.get('/api/v1/categories', getCategories);
     app.get('/api/v1/categoryKeywords', getCategoryKeywords);
+    app.get('/api/v1/statements', getStatements);
     app.get('/api/v1/categorizedTransactions', getCategorizedTransactions);
     app.get('/api/v1/duplicateCreditCardTransactions', getDuplicateCreditCardTransactions);
     app.get('/api/v1/minMaxCreditCardTransactionDates', getMinMaxCreditCardTransactionDates);
