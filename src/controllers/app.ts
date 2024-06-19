@@ -11,8 +11,9 @@ import {
   CheckingAccountTransactionEntity,
   CategoryEntity,
   CategoryKeywordEntity,
+  CheckingAccountStatementEntity,
+  CreditCardStatementEntity,
   CreditCardTransactionEntity,
-  StatementEntity,
   CategorizedTransactionEntity,
   BankTransactionEntity,
   ReviewedTransactionEntities,
@@ -23,7 +24,6 @@ import {
   addCategoryToDb,
   addCheckingAccountTransactionsToDb,
   addCreditCardTransactionsToDb,
-  addStatementToDb,
   getCheckingAccountTransactionsFromDb,
   getCategoriesFromDb,
   getCategoryKeywordsFromDb,
@@ -35,7 +35,8 @@ import {
   getMinMaxCheckingAccountTransactionDatesFromDb,
   deleteCategoryKeywordFromDb,
   updateCategoryKeywordInDb,
-  getStatementsFromDb
+  getCreditCardStatementsFromDb,
+  getCheckingAccountStatementsFromDb
 } from './dbInterface';
 import { BankTransactionType, DisregardLevel, StatementType } from '../types/enums';
 import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
@@ -63,9 +64,14 @@ export const getCategoryKeywords = async (request: Request, response: Response, 
   response.json(categoryKeywords);
 };
 
-export const getStatements = async (request: Request, response: Response, next: any) => {
-  const statements: StatementEntity[] = await getStatementsFromDb();
-  response.json(statements);
+export const getCreditCardStatements = async (request: Request, response: Response, next: any) => {
+  const creditCardStatements: CreditCardStatementEntity[] = await getCreditCardStatementsFromDb();
+  response.json(creditCardStatements);
+};
+
+export const getCheckingAccountStatements = async (request: Request, response: Response, next: any) => {
+  const checkingAccountStatements: CheckingAccountStatementEntity[] = await getCheckingAccountStatementsFromDb();
+  response.json(checkingAccountStatements);
 };
 
 export const getCategorizedTransactions = async (request: Request, response: Response, next: any) => {
@@ -274,7 +280,7 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
     const endDateStr: string = originalFileName.substring(27, 35);
     const dbEndDate: string = getCreditCardStatementDate(endDateStr);
 
-    const statementEntity: StatementEntity = {
+    const statementEntity: CreditCardStatementEntity = {
       id: statementId,
       fileName: originalFileName,
       type: StatementType.CreditCard,
@@ -295,7 +301,7 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
     const endDateStr: string = originalFileName.substring(31, 41);
     const dbEndDate: string = getCheckingAccountStatementDate(endDateStr);
 
-    const statementEntity: StatementEntity = {
+    const statementEntity: CheckingAccountStatementEntity = {
       id: statementId,
       fileName: originalFileName,
       type: StatementType.Checking,
@@ -303,6 +309,8 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
       endDate: dbEndDate,
       transactionCount: 0,
       netSpent: 0,
+      checkCount: 0,
+      atmWithdrawalCount: 0,
     };
     // await addStatementToDb(statementEntity);
     await processCheckingAccountStatement(statementEntity, csvTransactions);
@@ -314,7 +322,7 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
   };
 }
 
-const processCreditCardStatement = async (statementEntity: StatementEntity, csvTransactions: any[]) => {
+const processCreditCardStatement = async (creditCardStatementEntity: CreditCardStatementEntity, csvTransactions: any[]) => {
 
   const transactions: CreditCardTransactionEntity[] = [];
 
@@ -351,7 +359,7 @@ const processCreditCardStatement = async (statementEntity: StatementEntity, csvT
 
     const creditCardTransaction: CreditCardTransactionEntity = {
       id: uuidv4(),
-      statementId: statementEntity.id,
+      statementId: creditCardStatementEntity.id,
       transactionDate,
       postDate,
       description,
@@ -364,15 +372,15 @@ const processCreditCardStatement = async (statementEntity: StatementEntity, csvT
     transactions.push(creditCardTransaction);
   }
 
-  statementEntity.transactionCount = transactions.length;
-  statementEntity.netSpent = netSpent;
+  creditCardStatementEntity.transactionCount = transactions.length;
+  creditCardStatementEntity.netSpent = netSpent;
 
   console.log('netSpent: ', netSpent);
 
-  // await addCreditCardTransactionsToDb(transactions);
+  await addCreditCardTransactionsToDb(transactions);
 }
 
-const processCheckingAccountStatement = async (statementEntity: StatementEntity, csvTransactions: any[]): Promise<any> => {
+const processCheckingAccountStatement = async (checkingAccountStatementEntity: CheckingAccountStatementEntity, csvTransactions: any[]): Promise<any> => {
 
   const transactions: CheckingAccountTransactionEntity[] = [];
 
@@ -414,7 +422,7 @@ const processCheckingAccountStatement = async (statementEntity: StatementEntity,
 
     const checkingAccountTransaction: CheckingAccountTransactionEntity = {
       id: uuidv4(),
-      statementId: statementEntity.id,
+      statementId: checkingAccountStatementEntity.id,
       transactionDate,
       transactionType,
       name,
@@ -426,13 +434,13 @@ const processCheckingAccountStatement = async (statementEntity: StatementEntity,
     transactions.push(checkingAccountTransaction);
   }
 
-  statementEntity.transactionCount = transactions.length;
-  statementEntity.netSpent = netSpent;
+  checkingAccountStatementEntity.transactionCount = transactions.length;
+  checkingAccountStatementEntity.netSpent = netSpent;
 
-  statementEntity.checkCount = checkCount;
-  statementEntity.atmWithdrawalCount = atmWithdrawalCount;
+  checkingAccountStatementEntity.checkCount = checkCount;
+  checkingAccountStatementEntity.atmWithdrawalCount = atmWithdrawalCount;
 
-  // await addCheckingAccountTransactionsToDb(transactions);
+  await addCheckingAccountTransactionsToDb(transactions);
 
   console.log('processCheckingAccountStatement complete');
 

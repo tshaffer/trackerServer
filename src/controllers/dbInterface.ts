@@ -3,7 +3,8 @@ import {
   CheckingAccountTransactionEntity,
   CategoryKeywordEntity,
   CreditCardTransactionEntity,
-  StatementEntity,
+  CheckingAccountStatementEntity,
+  CreditCardStatementEntity,
   MinMaxStartDates
 } from 'entities';
 
@@ -12,12 +13,26 @@ import {
   getCheckingAccountTransactionModel,
   getCategoryModel,
   getCategoryKeywordModel,
-  getStatementModel
+  getCheckingAccountStatementModel,
+  getCreditCardStatementModel
 } from '../models';
 import { BankTransactionType } from '../types/enums';
 
-export const addStatementToDb = async (statement: StatementEntity): Promise<void> => {
-  const statementModel = getStatementModel();
+export const addCheckingAccountStatementToDb = async (statement: CheckingAccountStatementEntity): Promise<void> => {
+  const statementModel = getCheckingAccountStatementModel();
+  return statementModel.collection.insertOne(statement)
+    .then(() => {
+      return Promise.resolve();
+    })
+    .catch((error: any) => {
+      console.log('db add error: ', error);
+      debugger;
+      return null;
+    });
+}
+
+export const addCreditCardStatementToDb = async (statement: CreditCardStatementEntity): Promise<void> => {
+  const statementModel = getCreditCardStatementModel();
   return statementModel.collection.insertOne(statement)
     .then(() => {
       return Promise.resolve();
@@ -105,17 +120,33 @@ export const getCreditCardTransactionsFromDb = async (
   return transactions;
 }
 
-export const getStatementsFromDb = async (
-): Promise<StatementEntity[]> => {
+export const getCreditCardStatementsFromDb = async (
+): Promise<CreditCardStatementEntity[]> => {
 
-  const statementModel = getStatementModel();
+  const statementModel = getCreditCardStatementModel();
 
   const query = statementModel.find();
 
   const documents: any = await query.exec();
-  const statements: StatementEntity[] = [];
+  const statements: CreditCardStatementEntity[] = [];
   for (const document of documents) {
-    const statement: StatementEntity = document.toObject() as StatementEntity;
+    const statement: CreditCardStatementEntity = document.toObject() as CreditCardStatementEntity;
+    statements.push(statement);
+  }
+  return statements;
+}
+
+export const getCheckingAccountStatementsFromDb = async (
+): Promise<CheckingAccountStatementEntity[]> => {
+
+  const statementModel = getCheckingAccountStatementModel();
+
+  const query = statementModel.find();
+
+  const documents: any = await query.exec();
+  const statements: CheckingAccountStatementEntity[] = [];
+  for (const document of documents) {
+    const statement: CheckingAccountStatementEntity = document.toObject() as CheckingAccountStatementEntity;
     statements.push(statement);
   }
   return statements;

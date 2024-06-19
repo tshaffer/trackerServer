@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 
 mongoose.Schema.Types.String.checkRequired(v => typeof v === 'string');
 
-const StatementSchema = new Schema(
+const CreditCardStatementSchema = new Schema(
   {
     id: { type: String, required: true },
     type: { type: String, required: true },
@@ -14,10 +14,10 @@ const StatementSchema = new Schema(
   },
 );
 
-export const getStatementModel = () => {
-  const statementModel = connection.model('statement', StatementSchema);
-  return statementModel;
+export const getCreditCardStatementModel = () => {
+  const creditCardStatementModel = connection.model('creditcardstatement', CreditCardStatementSchema);
+  return creditCardStatementModel;
 }
 
 
-export default mongoose.model('Statement', StatementSchema);
+export default mongoose.model('CreditCardStatement', CreditCardStatementSchema);

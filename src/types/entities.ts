@@ -36,7 +36,7 @@ export interface CategorizedTransactionEntity {
   categoryEntity: CategoryEntity;
 }
 
-export interface StatementEntity {
+interface StatementEntity {
   id: string;
   fileName: string;
   type: StatementType;
@@ -44,9 +44,13 @@ export interface StatementEntity {
   endDate: string;
   transactionCount: number;
   netSpent: number;
+}
 
-  checkCount?: number;  // or null?
-  atmWithdrawalCount?: number; // or null?
+export type CreditCardStatementEntity = StatementEntity
+
+export interface CheckingAccountStatementEntity extends StatementEntity{
+  checkCount: number;
+  atmWithdrawalCount: number;
 }
 
 export interface CategoryEntity {
