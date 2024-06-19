@@ -276,13 +276,17 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
 
     const statementEntity: StatementEntity = {
       id: statementId,
+      fileName: originalFileName,
       type: StatementType.CreditCard,
       startDate: dbStartDate,
       endDate: dbEndDate,
+      transactionCount: 0,
+      netSpent: 0,
     };
-    await addStatementToDb(statementEntity);
-    await processCreditCardStatement(statementId, csvTransactions);
+    // await addStatementToDb(statementEntity);
+    await processCreditCardStatement(statementEntity, csvTransactions);
     return Promise.resolve(statementId);
+
   } else if (originalFileName.startsWith('Cash Reserve - 2137_')) {
 
     // Cash Reserve - 2137_07-01-2023_12-31-2023.csv
@@ -293,22 +297,28 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
 
     const statementEntity: StatementEntity = {
       id: statementId,
+      fileName: originalFileName,
       type: StatementType.Checking,
       startDate: dbStartDate,
       endDate: dbEndDate,
+      transactionCount: 0,
+      netSpent: 0,
     };
-    await addStatementToDb(statementEntity);
-    await processCheckingAccountStatement(statementId, csvTransactions);
+    // await addStatementToDb(statementEntity);
+    await processCheckingAccountStatement(statementEntity, csvTransactions);
     return Promise.resolve(statementId);
+
   } else {
     console.log('originalFileName does not match expected pattern: ', originalFileName);
     return Promise.reject('Invalid file name');
   };
 }
 
-const processCreditCardStatement = async (statementId: string, csvTransactions: any[]) => {
+const processCreditCardStatement = async (statementEntity: StatementEntity, csvTransactions: any[]) => {
 
   const transactions: CreditCardTransactionEntity[] = [];
+
+  let netSpent = 0;
 
   for (let i = 0; i < csvTransactions.length; i++) {
 
@@ -336,9 +346,12 @@ const processCreditCardStatement = async (statementId: string, csvTransactions: 
     const category = parsedLine[3];
     const type = parsedLine[4];
     const amount = parsedLine[5];
+
+    netSpent += amount;
+
     const creditCardTransaction: CreditCardTransactionEntity = {
       id: uuidv4(),
-      statementId,
+      statementId: statementEntity.id,
       transactionDate,
       postDate,
       description,
@@ -351,14 +364,21 @@ const processCreditCardStatement = async (statementId: string, csvTransactions: 
     transactions.push(creditCardTransaction);
   }
 
-  await addCreditCardTransactionsToDb(transactions);
+  statementEntity.transactionCount = transactions.length;
+  statementEntity.netSpent = netSpent;
+
+  console.log('netSpent: ', netSpent);
+
+  // await addCreditCardTransactionsToDb(transactions);
 }
 
-const processCheckingAccountStatement = async (statementId: string, csvTransactions: any[]): Promise<string[]> => {
+const processCheckingAccountStatement = async (statementEntity: StatementEntity, csvTransactions: any[]): Promise<any> => {
 
   const transactions: CheckingAccountTransactionEntity[] = [];
 
-  const errorList: string[] = [];
+  let netSpent = 0;
+  let checkCount = 0;
+  let atmWithdrawalCount = 0;
 
   console.log('processCheckingAccountStatement');
 
@@ -383,9 +403,18 @@ const processCheckingAccountStatement = async (statementId: string, csvTransacti
     if (!isNumber(amount)) {
       continue;
     }
+
+    if (name === 'CHECK') {
+      checkCount++;
+    }
+    if (name.startsWith('ATM WITHDRAWAL')) {
+      atmWithdrawalCount++;
+    }
+    netSpent += amount;
+
     const checkingAccountTransaction: CheckingAccountTransactionEntity = {
       id: uuidv4(),
-      statementId,
+      statementId: statementEntity.id,
       transactionDate,
       transactionType,
       name,
@@ -397,11 +426,21 @@ const processCheckingAccountStatement = async (statementId: string, csvTransacti
     transactions.push(checkingAccountTransaction);
   }
 
-  await addCheckingAccountTransactionsToDb(transactions);
+  statementEntity.transactionCount = transactions.length;
+  statementEntity.netSpent = netSpent;
+
+  statementEntity.checkCount = checkCount;
+  statementEntity.atmWithdrawalCount = atmWithdrawalCount;
+
+  // await addCheckingAccountTransactionsToDb(transactions);
 
   console.log('processCheckingAccountStatement complete');
 
-  return Promise.resolve(errorList);
+  console.log('checkCount: ', checkCount);
+  console.log('atmWithdrawalCount: ', atmWithdrawalCount);
+  console.log('netSpent: ', netSpent);
+
+  return Promise.resolve();
 }
 
 const transform = (arg1: any, arg2: any) => {
