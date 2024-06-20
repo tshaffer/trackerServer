@@ -36,7 +36,9 @@ import {
   deleteCategoryKeywordFromDb,
   updateCategoryKeywordInDb,
   getCreditCardStatementsFromDb,
-  getCheckingAccountStatementsFromDb
+  getCheckingAccountStatementsFromDb,
+  addCreditCardStatementToDb,
+  addCheckingAccountStatementToDb
 } from './dbInterface';
 import { BankTransactionType, DisregardLevel, StatementType } from '../types/enums';
 import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
@@ -289,8 +291,8 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
       transactionCount: 0,
       netSpent: 0,
     };
-    // await addStatementToDb(statementEntity);
     await processCreditCardStatement(statementEntity, csvTransactions);
+    await addCreditCardStatementToDb(statementEntity);
     return Promise.resolve(statementId);
 
   } else if (originalFileName.startsWith('Cash Reserve - 2137_')) {
@@ -312,8 +314,8 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
       checkCount: 0,
       atmWithdrawalCount: 0,
     };
-    // await addStatementToDb(statementEntity);
     await processCheckingAccountStatement(statementEntity, csvTransactions);
+    await addCheckingAccountStatementToDb(statementEntity);
     return Promise.resolve(statementId);
 
   } else {
