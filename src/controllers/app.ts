@@ -293,6 +293,8 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
     };
     await processCreditCardStatement(statementEntity, csvTransactions);
     await addCreditCardStatementToDb(statementEntity);
+    await executeRemoveDuplicateCreditCardTransactions();
+    await executeAddReferencedCategories();
     return Promise.resolve(statementId);
 
   } else if (originalFileName.startsWith('Cash Reserve - 2137_')) {
@@ -558,15 +560,23 @@ export const getDuplicateCreditCardTransactions = async (request: Request, respo
 }
 
 export const removeDuplicateCreditCardTransactions = async (request: Request, response: Response, next: any) => {
+  await executeRemoveDuplicateCreditCardTransactions();
+  return response.status(200).send();
+}
+
+const executeRemoveDuplicateCreditCardTransactions = async () => {
   const duplicateCreditCardTransactions = await getDuplicateCreditCardTransactionsInternal();
   const idsToDelete: string[] = duplicateCreditCardTransactions.map(doc => (doc as any)._id);
   await removeDuplicateCreditCardTransactionsDb(idsToDelete);
-  return response.status(200).send();
 }
 
 // add categories that are referenced in credit card transactions but do not already exist in the db
 export const addReferencedCategories = async (request: Request, response: Response, next: any) => {
+  await executeAddReferencedCategories();
+  return response.status(200).send();
+}
 
+const executeAddReferencedCategories = async () => {
   const minMaxTransactionDates: MinMaxStartDates = await getMinMaxCreditCardTransactionDatesFromDb();
 
   const { minDate, maxDate } = minMaxTransactionDates;
@@ -595,8 +605,6 @@ export const addReferencedCategories = async (request: Request, response: Respon
   });
 
   await addCategoriesToDb(categoryEntities);
-
-  return response.status(200).send();
 }
 
 export const getMinMaxCreditCardTransactionDates = async (request: Request, response: Response, next: any) => {
