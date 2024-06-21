@@ -492,8 +492,8 @@ export const addCategory = async (request: Request, response: Response, next: an
     keyword,
     disregardLevel: DisregardLevel.None
   };
-  await addCategoryToDb(categoryEntity);
-  return response.status(200).send();
+  const addedCategoryEntity: CategoryEntity = await addCategoryToDb(categoryEntity);
+  return response.json(addedCategoryEntity)
 }
 
 export const addCategoryKeyword = async (request: Request, response: Response, next: any) => {

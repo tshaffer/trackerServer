@@ -186,11 +186,11 @@ export const getCategoryKeywordsFromDb = async (
   return categoryKeywordEntities;
 }
 
-export const addCategoryToDb = async (category: CategoryEntity): Promise<void> => {
+export const addCategoryToDb = async (category: CategoryEntity): Promise<CategoryEntity> => {
   const categoryModel = getCategoryModel();
   return categoryModel.collection.insertOne(category)
     .then(() => {
-      return Promise.resolve();
+      return Promise.resolve(category);
     })
     .catch((error: any) => {
       console.log('db add error: ', error);
