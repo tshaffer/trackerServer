@@ -17,7 +17,7 @@ import {
   CategorizedTransactionEntity,
   BankTransactionEntity,
   ReviewedTransactionEntities,
-  MinMaxStartDates
+  MinMaxDates
 } from '../types';
 import {
   addCategoryKeywordToDb,
@@ -577,7 +577,7 @@ export const addReferencedCategories = async (request: Request, response: Respon
 }
 
 const executeAddReferencedCategories = async () => {
-  const minMaxTransactionDates: MinMaxStartDates = await getMinMaxCreditCardTransactionDatesFromDb();
+  const minMaxTransactionDates: MinMaxDates = await getMinMaxCreditCardTransactionDatesFromDb();
 
   const { minDate, maxDate } = minMaxTransactionDates;
   const creditCardTransactions: CreditCardTransactionEntity[] = await getCreditCardTransactionsFromDb(minDate, maxDate);

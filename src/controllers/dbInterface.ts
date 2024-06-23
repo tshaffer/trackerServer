@@ -5,7 +5,7 @@ import {
   CreditCardTransactionEntity,
   CheckingAccountStatementEntity,
   CreditCardStatementEntity,
-  MinMaxStartDates
+  MinMaxDates
 } from 'entities';
 
 import {
@@ -287,15 +287,15 @@ export const removeDuplicateCreditCardTransactionsDb = async (idsToDelete: strin
     });
 }
 
-export const getMinMaxCreditCardTransactionDatesFromDb = async (): Promise<MinMaxStartDates> => {
+export const getMinMaxCreditCardTransactionDatesFromDb = async (): Promise<MinMaxDates> => {
   return getMinMaxTransactionDatesFromDb(getCreditCardTransactionModel());
 }
 
-export const getMinMaxCheckingAccountTransactionDatesFromDb = async (): Promise<MinMaxStartDates> => {
+export const getMinMaxCheckingAccountTransactionDatesFromDb = async (): Promise<MinMaxDates> => {
   return getMinMaxTransactionDatesFromDb(getCheckingAccountTransactionModel());
 }
 
-const getMinMaxTransactionDatesFromDb = async (model: any): Promise<MinMaxStartDates> => {
+const getMinMaxTransactionDatesFromDb = async (model: any): Promise<MinMaxDates> => {
 
   const query = model.aggregate([
     {

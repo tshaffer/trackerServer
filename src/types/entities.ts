@@ -48,7 +48,7 @@ interface StatementEntity {
 
 export type CreditCardStatementEntity = StatementEntity
 
-export interface CheckingAccountStatementEntity extends StatementEntity{
+export interface CheckingAccountStatementEntity extends StatementEntity {
   checkCount: number;
   atmWithdrawalCount: number;
 }
@@ -70,7 +70,7 @@ export interface ReviewedTransactionEntities {
   uncategorizedTransactions: BankTransactionEntity[]
 }
 
-export interface MinMaxStartDates {
+export interface MinMaxDates {
   minDate: string;
   maxDate: string;
 }
