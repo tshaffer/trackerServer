@@ -52,9 +52,9 @@ export class Routes {
     app.post('/api/v1/creditCardStatement', uploadStatement);
 
     app.post('/api/v1/addCategory', addCategory);
-    app.post('/api/v1/addCategoryKeyword', addCategoryAssignmentRule);
-    app.post('/api/v1/updateCategoryKeyword', updateCategoryAssignmentRule);
-    app.post('/api/v1/deleteCategoryKeyword', deleteCategoryAssignmentRule);
+    app.post('/api/v1/addCategoryAssignmentRule', addCategoryAssignmentRule);
+    app.post('/api/v1/updateCategoryAssignmentRule', updateCategoryAssignmentRule);
+    app.post('/api/v1/deleteCategoryAssignmentRule', deleteCategoryAssignmentRule);
     app.post('/api/v1/removeDuplicateCreditCardTransactions', removeDuplicateCreditCardTransactions);
     app.post('/api/v1/addReferencedCategories', addReferencedCategories);
   }
