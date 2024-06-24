@@ -10,7 +10,7 @@ import {
   CategorizedStatementData,
   CheckingAccountTransactionEntity,
   CategoryEntity,
-  CategoryKeywordEntity,
+  CategoryAssignmentRule,
   CheckingAccountStatementEntity,
   CreditCardStatementEntity,
   CreditCardTransactionEntity,
@@ -45,7 +45,7 @@ import { BankTransactionType, DisregardLevel, StatementType } from '../types/enu
 import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
 
 export const initializeDB = async (request: Request, response: Response, next: any) => {
-  
+
   console.log('initializeDB');
 
   // add Ignore category if it does not already exist
@@ -55,7 +55,7 @@ export const initializeDB = async (request: Request, response: Response, next: a
     const id: string = uuidv4();
     const ignoreCategoryEntity: CategoryEntity = {
       id: id,
-      keyword: ignoreCategoryName,
+      name: ignoreCategoryName,
       disregardLevel: DisregardLevel.None,
     };
     await addCategoryToDb(ignoreCategoryEntity);
@@ -82,7 +82,7 @@ export const getCategories = async (request: Request, response: Response, next: 
 };
 
 export const getCategoryKeywords = async (request: Request, response: Response, next: any) => {
-  const categoryKeywords: CategoryKeywordEntity[] = await getCategoryKeywordsFromDb();
+  const categoryKeywords: CategoryAssignmentRule[] = await getCategoryKeywordsFromDb();
   response.json(categoryKeywords);
 };
 
@@ -108,7 +108,7 @@ export const getCategorizedTransactions = async (request: Request, response: Res
     }
   }
 
-  const categoryKeywords: CategoryKeywordEntity[] = await getCategoryKeywordsFromDb();
+  const categoryKeywords: CategoryAssignmentRule[] = await getCategoryKeywordsFromDb();
 
   const checkingAccountTransactions: BankTransactionEntity[] = await getCheckingAccountTransactionsFromDb(startDate, endDate);
   const creditCardTransactions: BankTransactionEntity[] = await getCreditCardTransactionsFromDb(startDate, endDate);
@@ -138,7 +138,7 @@ export const getCategorizedTransactions = async (request: Request, response: Res
     startDate,
     endDate,
     transactions,
-    total: sum,
+    netDebits: sum,
     unidentifiedBankTransactions,
   };
 
@@ -148,7 +148,7 @@ export const getCategorizedTransactions = async (request: Request, response: Res
 const getUnidentifiedTransactions = (
   uncategorizedTransactions: BankTransactionEntity[],
   ignoredCategoryId: string,
-  categoryKeywordEntities: CategoryKeywordEntity[],
+  categoryKeywordEntities: CategoryAssignmentRule[],
 ): BankTransactionEntity[] => {
 
   const unidentifiedBankTransactionEntities: BankTransactionEntity[] = [];
@@ -161,13 +161,13 @@ const getUnidentifiedTransactions = (
   return unidentifiedBankTransactionEntities;
 }
 
-const isUnidentifiedTransaction = (uncategorizedTransaction: BankTransactionEntity, ignoredCategoryId: string, categoryKeywords: CategoryKeywordEntity[]): boolean => {
+const isUnidentifiedTransaction = (uncategorizedTransaction: BankTransactionEntity, ignoredCategoryId: string, categoryKeywords: CategoryAssignmentRule[]): boolean => {
 
   const transactionDetails: string = uncategorizedTransaction.bankTransactionType === BankTransactionType.CreditCard ?
     (uncategorizedTransaction as CreditCardTransactionEntity).description : (uncategorizedTransaction as CheckingAccountTransactionEntity).name;
 
   for (const categoryKeyword of categoryKeywords) {
-    if (transactionDetails.includes(categoryKeyword.keyword)) {
+    if (transactionDetails.includes(categoryKeyword.pattern)) {
       if (ignoredCategoryId === categoryKeyword.categoryId) {
         return false;
       }
@@ -181,7 +181,7 @@ const isUnidentifiedTransaction = (uncategorizedTransaction: BankTransactionEnti
 const categorizeTransactions = (
   transactions: BankTransactionEntity[],
   categories: CategoryEntity[],
-  categoryKeywordEntities: CategoryKeywordEntity[]
+  categoryKeywordEntities: CategoryAssignmentRule[]
 ): ReviewedTransactionEntities => {
 
   const categorizedTransactions: CategorizedTransactionEntity[] = [];
@@ -213,14 +213,14 @@ const categorizeTransactions = (
 const categorizeTransaction = (
   transaction: BankTransactionEntity,
   categories: CategoryEntity[],
-  categoryKeywords: CategoryKeywordEntity[]): CategoryEntity | null => {
+  categoryKeywords: CategoryAssignmentRule[]): CategoryEntity | null => {
 
   const transactionDetails: string = transaction.bankTransactionType === BankTransactionType.CreditCard ?
     (transaction as CreditCardTransactionEntity).description : (transaction as CheckingAccountTransactionEntity).name;
 
   for (const categoryKeyword of categoryKeywords) {
-    if (transactionDetails.includes(categoryKeyword.keyword)) {
-      const categoryKeywordEntity: CategoryKeywordEntity = categoryKeyword;
+    if (transactionDetails.includes(categoryKeyword.pattern)) {
+      const categoryKeywordEntity: CategoryAssignmentRule = categoryKeyword;
       const categoryId = categoryKeywordEntity.categoryId;
       for (const category of categories) {
         if (category.id === categoryId) {
@@ -233,7 +233,7 @@ const categorizeTransaction = (
   if (transaction.bankTransactionType === BankTransactionType.CreditCard) {
     if (!isNil((transaction as unknown as CreditCardTransactionEntity).category)) {
       for (const category of categories) {
-        if ((transaction as unknown as CreditCardTransactionEntity).category === category.keyword) {
+        if ((transaction as unknown as CreditCardTransactionEntity).category === category.name) {
           return category;
         }
       }
@@ -309,7 +309,7 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
       startDate: dbStartDate,
       endDate: dbEndDate,
       transactionCount: 0,
-      netSpent: 0,
+      netDebits: 0,
     };
     await processCreditCardStatement(statementEntity, csvTransactions);
     await addCreditCardStatementToDb(statementEntity);
@@ -332,7 +332,7 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
       startDate: dbStartDate,
       endDate: dbEndDate,
       transactionCount: 0,
-      netSpent: 0,
+      netDebits: 0,
       checkCount: 0,
       atmWithdrawalCount: 0,
     };
@@ -397,7 +397,7 @@ const processCreditCardStatement = async (creditCardStatementEntity: CreditCardS
   }
 
   creditCardStatementEntity.transactionCount = transactions.length;
-  creditCardStatementEntity.netSpent = netSpent;
+  creditCardStatementEntity.netDebits = netSpent;
 
   console.log('netSpent: ', netSpent);
 
@@ -459,7 +459,7 @@ const processCheckingAccountStatement = async (checkingAccountStatementEntity: C
   }
 
   checkingAccountStatementEntity.transactionCount = transactions.length;
-  checkingAccountStatementEntity.netSpent = netSpent;
+  checkingAccountStatementEntity.netDebits = netSpent;
 
   checkingAccountStatementEntity.checkCount = checkCount;
   checkingAccountStatementEntity.atmWithdrawalCount = atmWithdrawalCount;
@@ -509,7 +509,7 @@ export const addCategory = async (request: Request, response: Response, next: an
   const { id, keyword } = request.body;
   const categoryEntity: CategoryEntity = {
     id,
-    keyword,
+    name: keyword,
     disregardLevel: DisregardLevel.None
   };
   const addedCategoryEntity: CategoryEntity = await addCategoryToDb(categoryEntity);
@@ -518,9 +518,9 @@ export const addCategory = async (request: Request, response: Response, next: an
 
 export const addCategoryKeyword = async (request: Request, response: Response, next: any) => {
   const { id, keyword, categoryId } = request.body;
-  const categoryKeywordEntity: CategoryKeywordEntity = {
+  const categoryKeywordEntity: CategoryAssignmentRule = {
     id,
-    keyword,
+    pattern: keyword,
     categoryId,
   };
   await addCategoryKeywordToDb(categoryKeywordEntity);
@@ -529,9 +529,9 @@ export const addCategoryKeyword = async (request: Request, response: Response, n
 
 export const updateCategoryKeyword = async (request: Request, response: Response, next: any) => {
   const { id, keyword, categoryId } = request.body;
-  const categoryKeywordEntity: CategoryKeywordEntity = {
+  const categoryKeywordEntity: CategoryAssignmentRule = {
     id,
-    keyword,
+    pattern: keyword,
     categoryId,
   };
   await updateCategoryKeywordInDb(categoryKeywordEntity);
@@ -540,9 +540,9 @@ export const updateCategoryKeyword = async (request: Request, response: Response
 
 export const deleteCategoryKeyword = async (request: Request, response: Response, next: any) => {
   const { id, keyword, categoryId } = request.body;
-  const categoryKeywordEntity: CategoryKeywordEntity = {
+  const categoryKeywordEntity: CategoryAssignmentRule = {
     id,
-    keyword,
+    pattern: keyword,
     categoryId,
   };
   await deleteCategoryKeywordFromDb(categoryKeywordEntity);
@@ -613,13 +613,13 @@ const executeAddReferencedCategories = async () => {
   const existingCategories: CategoryEntity[] = await getCategoriesFromDb();
 
   const referencedArray: string[] = Array.from(referencedCategories);
-  const existingKeywords: Set<string> = new Set<string>(existingCategories.map(category => category.keyword));
+  const existingKeywords: Set<string> = new Set<string>(existingCategories.map(category => category.name));
   const newCategories: string[] = referencedArray.filter(category => !existingKeywords.has(category));
 
   const categoryEntities: CategoryEntity[] = newCategories.map((keyword: string) => {
     return {
       id: uuidv4(),
-      keyword,
+      name: keyword,
       disregardLevel: DisregardLevel.None,
     };
   });

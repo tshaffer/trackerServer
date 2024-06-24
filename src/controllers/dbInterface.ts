@@ -1,7 +1,7 @@
 import {
   CategoryEntity,
   CheckingAccountTransactionEntity,
-  CategoryKeywordEntity,
+  CategoryAssignmentRule,
   CreditCardTransactionEntity,
   CheckingAccountStatementEntity,
   CreditCardStatementEntity,
@@ -12,7 +12,7 @@ import {
   getCreditCardTransactionModel,
   getCheckingAccountTransactionModel,
   getCategoryModel,
-  getCategoryKeywordModel,
+  getCategoryAssignmentRuleModel,
   getCheckingAccountStatementModel,
   getCreditCardStatementModel
 } from '../models';
@@ -182,18 +182,18 @@ export const getCategoriesFromDb = async (
 }
 
 export const getCategoryKeywordsFromDb = async (
-): Promise<CategoryKeywordEntity[]> => {
+): Promise<CategoryAssignmentRule[]> => {
 
   console.log('getCategoryKeywordsFromDb: ');
 
-  const categoryKeywordModel = getCategoryKeywordModel();
+  const categoryKeywordModel = getCategoryAssignmentRuleModel();
 
   const query = categoryKeywordModel.find();
 
   const documents: any = await query.exec();
-  const categoryKeywordEntities: CategoryKeywordEntity[] = [];
+  const categoryKeywordEntities: CategoryAssignmentRule[] = [];
   for (const document of documents) {
-    const categoryKeywordEntity: CategoryKeywordEntity = document.toObject() as CategoryKeywordEntity;
+    const categoryKeywordEntity: CategoryAssignmentRule = document.toObject() as CategoryAssignmentRule;
     categoryKeywordEntities.push(categoryKeywordEntity);
   }
   return categoryKeywordEntities;
@@ -225,8 +225,8 @@ export const addCategoriesToDb = async (categories: CategoryEntity[]): Promise<a
     });
 }
 
-export const addCategoryKeywordToDb = async (categoryKeywordEntity: CategoryKeywordEntity): Promise<void> => {
-  const categoryKeywordModel = getCategoryKeywordModel();
+export const addCategoryKeywordToDb = async (categoryKeywordEntity: CategoryAssignmentRule): Promise<any> => {
+  const categoryKeywordModel = getCategoryAssignmentRuleModel();
   return categoryKeywordModel.collection.insertOne(categoryKeywordEntity)
     .then(() => {
       return Promise.resolve();
@@ -234,12 +234,12 @@ export const addCategoryKeywordToDb = async (categoryKeywordEntity: CategoryKeyw
     .catch((error: any) => {
       console.log('db add error: ', error);
       debugger;
-      return null;
+      return Promise.reject();
     });
 }
 
-export const updateCategoryKeywordInDb = async (categoryKeywordEntity: CategoryKeywordEntity): Promise<void> => {
-  const categoryKeywordModel = getCategoryKeywordModel();
+export const updateCategoryKeywordInDb = async (categoryKeywordEntity: CategoryAssignmentRule): Promise<void> => {
+  const categoryKeywordModel = getCategoryAssignmentRuleModel();
   const query = categoryKeywordModel.findOneAndUpdate(
     { id: categoryKeywordEntity.id },
     categoryKeywordEntity
@@ -247,8 +247,8 @@ export const updateCategoryKeywordInDb = async (categoryKeywordEntity: CategoryK
   await query.exec();
 }
 
-export const deleteCategoryKeywordFromDb = async (categoryKeywordEntity: CategoryKeywordEntity): Promise<void> => {
-  const categoryKeywordModel = getCategoryKeywordModel();
+export const deleteCategoryKeywordFromDb = async (categoryKeywordEntity: CategoryAssignmentRule): Promise<void> => {
+  const categoryKeywordModel = getCategoryAssignmentRuleModel();
   const filter = { id: categoryKeywordEntity.id };
   await categoryKeywordModel.deleteOne(filter);
 }

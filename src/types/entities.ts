@@ -5,10 +5,10 @@ export interface CategorizedStatementData {
   endDate: string;
   transactions: CategorizedTransactionEntity[];
   unidentifiedBankTransactions: BankTransactionEntity[];
-  total: number;
+  netDebits: number;
 }
 
-interface RawTransactionEntity {
+interface TransactionEntity {
   id: string;
   statementId: string;
   transactionDate: string;
@@ -16,14 +16,14 @@ interface RawTransactionEntity {
   bankTransactionType: BankTransactionType;
 }
 
-export interface CreditCardTransactionEntity extends RawTransactionEntity {
+export interface CreditCardTransactionEntity extends TransactionEntity {
   postDate: string;
   category: string;
   description: string;
   type: string;
 }
 
-export interface CheckingAccountTransactionEntity extends RawTransactionEntity {
+export interface CheckingAccountTransactionEntity extends TransactionEntity {
   transactionType: string;
   name: string;
   memo: string;
@@ -43,7 +43,7 @@ interface StatementEntity {
   startDate: string;
   endDate: string;
   transactionCount: number;
-  netSpent: number;
+  netDebits: number;
 }
 
 export type CreditCardStatementEntity = StatementEntity
@@ -55,13 +55,13 @@ export interface CheckingAccountStatementEntity extends StatementEntity {
 
 export interface CategoryEntity {
   id: string
-  keyword: string;
+  name: string;
   disregardLevel: DisregardLevel;
 }
 
-export interface CategoryKeywordEntity {
+export interface CategoryAssignmentRule {
   id: string;
-  keyword: string;
+  pattern: string;
   categoryId: string;
 }
 

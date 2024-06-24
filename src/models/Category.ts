@@ -8,15 +8,14 @@ mongoose.Schema.Types.String.checkRequired(v => typeof v === 'string');
 const CategorySchema = new Schema(
   {
     id: { type: String, required: true },
-    keyword: { type: String, required: true },
+    name: { type: String, required: true },
     disregardLevel: { type: Number, required: true },
   },
 );
 
 export const getCategoryModel = () => {
-  const categoryKeywordModel = connection.model('categories', CategorySchema);
-  return categoryKeywordModel;
+  const categoryModel = connection.model('categories', CategorySchema);
+  return categoryModel;
 }
-
 
 export default mongoose.model('Category', CategorySchema);

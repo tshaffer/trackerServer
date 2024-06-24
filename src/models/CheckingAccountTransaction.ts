@@ -13,7 +13,7 @@ const CheckingAccountTransactionSchema = new Schema(
     transactionType: { type: String, required: true },
     name: { type: String, required: true },
     memo: { type: String, required: true },
-    amount: { type: Number, required: true },
+    netDebits: { type: Number, required: true },
   },
 );
 

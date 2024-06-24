@@ -13,7 +13,7 @@ const CheckingAccountStatementSchema = new Schema(
     startDate: { type: String, required: true },
     endDate: { type: String, required: true },
     transactionCount: { type: Number, required: true },
-    netSpent: { type: Number, required: true },
+    netDebits: { type: Number, required: true },
   },
 );
 
