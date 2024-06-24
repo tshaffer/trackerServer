@@ -46,19 +46,17 @@ import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
 
 export const initializeDB = async (request: Request, response: Response, next: any) => {
 
-  console.log('initializeDB');
-
   // add Ignore category if it does not already exist
   const ignoreCategoryName = 'Ignore';
   const ignoreCategory: Category | null = await getCategoryByNameFromDb(ignoreCategoryName);
   if (isNil(ignoreCategory)) {
     const id: string = uuidv4();
-    const ignoreCategoryEntity: Category = {
+    const ignoreCategory: Category = {
       id: id,
       name: ignoreCategoryName,
       disregardLevel: DisregardLevel.None,
     };
-    await addCategoryToDb(ignoreCategoryEntity);
+    await addCategoryToDb(ignoreCategory);
   }
   return response.status(200).send();
 }
@@ -118,7 +116,12 @@ export const getCategorizedTransactions = async (request: Request, response: Res
   const categorizedTransactions: CategorizedTransaction[] = reviewedTransactionEntities.categorizedTransactions;
   const uncategorizedTransactions: BankTransaction[] = reviewedTransactionEntities.uncategorizedTransactions;
   // TEDTODO - fetch the ignoredCategoryId from the database; support multiple ignored categories
-  const unidentifiedBankTransactions: BankTransaction[] = getUnidentifiedTransactions(uncategorizedTransactions, "9a5cf18d-e308-4f9f-8dc4-e026dfb7833b", categoryAssignmentRules);
+  const ignoreCategoryName = 'Ignore';
+  const ignoreCategory: Category | null = await getCategoryByNameFromDb(ignoreCategoryName);
+  if (isNil(ignoreCategory)) {
+    return response.status(500).send();
+  }
+  const unidentifiedBankTransactions: BankTransaction[] = getUnidentifiedTransactions(uncategorizedTransactions, ignoreCategory.id, categoryAssignmentRules);
 
   const transactions: CategorizedTransaction[] = [];
   let sum = 0;
@@ -176,7 +179,6 @@ const isUnidentifiedTransaction = (uncategorizedTransaction: BankTransaction, ig
 
   return true;
 }
-
 
 const categorizeTransactions = (
   transactions: BankTransaction[],
@@ -302,7 +304,7 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
     const endDateStr: string = originalFileName.substring(27, 35);
     const dbEndDate: string = getCreditCardStatementDate(endDateStr);
 
-    const statementEntity: CreditCardStatement = {
+    const statement: CreditCardStatement = {
       id: statementId,
       fileName: originalFileName,
       type: StatementType.CreditCard,
@@ -311,8 +313,8 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
       transactionCount: 0,
       netDebits: 0,
     };
-    await processCreditCardStatement(statementEntity, csvTransactions);
-    await addCreditCardStatementToDb(statementEntity);
+    await processCreditCardStatement(statement, csvTransactions);
+    await addCreditCardStatementToDb(statement);
     await executeRemoveDuplicateCreditCardTransactions();
     await executeAddReferencedCategories();
     return Promise.resolve(statementId);
@@ -325,7 +327,7 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
     const endDateStr: string = originalFileName.substring(31, 41);
     const dbEndDate: string = getCheckingAccountStatementDate(endDateStr);
 
-    const statementEntity: CheckingAccountStatement = {
+    const statement: CheckingAccountStatement = {
       id: statementId,
       fileName: originalFileName,
       type: StatementType.Checking,
@@ -336,8 +338,8 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
       checkCount: 0,
       atmWithdrawalCount: 0,
     };
-    await processCheckingAccountStatement(statementEntity, csvTransactions);
-    await addCheckingAccountStatementToDb(statementEntity);
+    await processCheckingAccountStatement(statement, csvTransactions);
+    await addCheckingAccountStatementToDb(statement);
     return Promise.resolve(statementId);
 
   } else {
@@ -346,11 +348,11 @@ const processStatement = async (originalFileName: string, csvTransactions: any[]
   };
 }
 
-const processCreditCardStatement = async (creditCardStatementEntity: CreditCardStatement, csvTransactions: any[]) => {
+const processCreditCardStatement = async (creditCardStatement: CreditCardStatement, csvTransactions: any[]) => {
 
   const transactions: CreditCardTransaction[] = [];
 
-  let netSpent = 0;
+  let netDebits = 0;
 
   for (let i = 0; i < csvTransactions.length; i++) {
 
@@ -379,11 +381,11 @@ const processCreditCardStatement = async (creditCardStatementEntity: CreditCardS
     const type = parsedLine[4];
     const amount = parsedLine[5];
 
-    netSpent += amount;
+    netDebits += amount;
 
     const creditCardTransaction: CreditCardTransaction = {
       id: uuidv4(),
-      statementId: creditCardStatementEntity.id,
+      statementId: creditCardStatement.id,
       transactionDate,
       postDate,
       description,
@@ -396,23 +398,19 @@ const processCreditCardStatement = async (creditCardStatementEntity: CreditCardS
     transactions.push(creditCardTransaction);
   }
 
-  creditCardStatementEntity.transactionCount = transactions.length;
-  creditCardStatementEntity.netDebits = netSpent;
-
-  console.log('netSpent: ', netSpent);
+  creditCardStatement.transactionCount = transactions.length;
+  creditCardStatement.netDebits = netDebits;
 
   await addCreditCardTransactionsToDb(transactions);
 }
 
-const processCheckingAccountStatement = async (checkingAccountStatementEntity: CheckingAccountStatement, csvTransactions: any[]): Promise<any> => {
+const processCheckingAccountStatement = async (checkingAccountStatement: CheckingAccountStatement, csvTransactions: any[]): Promise<any> => {
 
   const transactions: CheckingAccountTransaction[] = [];
 
-  let netSpent = 0;
+  let netDebits = 0;
   let checkCount = 0;
   let atmWithdrawalCount = 0;
-
-  console.log('processCheckingAccountStatement');
 
   for (let i = 0; i < csvTransactions.length; i++) {
 
@@ -442,11 +440,11 @@ const processCheckingAccountStatement = async (checkingAccountStatementEntity: C
     if (name.startsWith('ATM WITHDRAWAL')) {
       atmWithdrawalCount++;
     }
-    netSpent += amount;
+    netDebits += amount;
 
     const checkingAccountTransaction: CheckingAccountTransaction = {
       id: uuidv4(),
-      statementId: checkingAccountStatementEntity.id,
+      statementId: checkingAccountStatement.id,
       transactionDate,
       transactionType,
       name,
@@ -458,19 +456,13 @@ const processCheckingAccountStatement = async (checkingAccountStatementEntity: C
     transactions.push(checkingAccountTransaction);
   }
 
-  checkingAccountStatementEntity.transactionCount = transactions.length;
-  checkingAccountStatementEntity.netDebits = netSpent;
+  checkingAccountStatement.transactionCount = transactions.length;
+  checkingAccountStatement.netDebits = netDebits;
 
-  checkingAccountStatementEntity.checkCount = checkCount;
-  checkingAccountStatementEntity.atmWithdrawalCount = atmWithdrawalCount;
+  checkingAccountStatement.checkCount = checkCount;
+  checkingAccountStatement.atmWithdrawalCount = atmWithdrawalCount;
 
   await addCheckingAccountTransactionsToDb(transactions);
-
-  console.log('processCheckingAccountStatement complete');
-
-  console.log('checkCount: ', checkCount);
-  console.log('atmWithdrawalCount: ', atmWithdrawalCount);
-  console.log('netSpent: ', netSpent);
 
   return Promise.resolve();
 }
@@ -507,13 +499,13 @@ const getCheckingAccountStatementDate = (dateStr: string): string => {
 
 export const addCategory = async (request: Request, response: Response, next: any) => {
   const { id, name } = request.body;
-  const categoryEntity: Category = {
+  const category: Category = {
     id,
     name,
     disregardLevel: DisregardLevel.None
   };
-  const addedCategoryEntity: Category = await addCategoryToDb(categoryEntity);
-  return response.json(addedCategoryEntity)
+  const addedCategory: Category = await addCategoryToDb(category);
+  return response.json(addedCategory)
 }
 
 export const addCategoryAssignmentRule = async (request: Request, response: Response, next: any) => {
@@ -560,12 +552,12 @@ const getDuplicateCreditCardTransactionsInternal = async () => {
   for (const creditCardTransaction of creditCardTransactions) {
     const key = creditCardTransaction.postDate + creditCardTransaction.description + creditCardTransaction.amount.toString();
 
-    const existingCreditCardTransactionEntity: CreditCardTransaction | undefined = creditCardTransactionMap.get(key);
+    const existingCreditCardTransaction: CreditCardTransaction | undefined = creditCardTransactionMap.get(key);
 
-    if (isNil(existingCreditCardTransactionEntity)) {
+    if (isNil(existingCreditCardTransaction)) {
       creditCardTransactionMap.set(key, creditCardTransaction);
     } else {
-      if (existingCreditCardTransactionEntity.statementId !== creditCardTransaction.statementId) {
+      if (existingCreditCardTransaction.statementId !== creditCardTransaction.statementId) {
         duplicateCreditCardTransactions.push(creditCardTransaction);
       }
     }
