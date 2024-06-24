@@ -154,7 +154,7 @@ export const getCheckingAccountStatementsFromDb = async (
 
 export const getCategoryByNameFromDb = async (categoryName: string): Promise<CategoryEntity | null> => {
   const categoryModel = getCategoryModel();
-  const querySpec = { keyword: categoryName }
+  const querySpec = { name: categoryName }
   const query = categoryModel.find(querySpec);
 
   const documents: any = await query.exec();
@@ -181,22 +181,20 @@ export const getCategoriesFromDb = async (
   return categories;
 }
 
-export const getCategoryKeywordsFromDb = async (
+export const getCategoryAssignmentRulesFromDb = async (
 ): Promise<CategoryAssignmentRule[]> => {
 
-  console.log('getCategoryKeywordsFromDb: ');
+  const categoryAssignmentRuleModel = getCategoryAssignmentRuleModel();
 
-  const categoryKeywordModel = getCategoryAssignmentRuleModel();
-
-  const query = categoryKeywordModel.find();
+  const query = categoryAssignmentRuleModel.find();
 
   const documents: any = await query.exec();
-  const categoryKeywordEntities: CategoryAssignmentRule[] = [];
+  const categoryAssignmentRules: CategoryAssignmentRule[] = [];
   for (const document of documents) {
-    const categoryKeywordEntity: CategoryAssignmentRule = document.toObject() as CategoryAssignmentRule;
-    categoryKeywordEntities.push(categoryKeywordEntity);
+    const categoryAssignmentRule: CategoryAssignmentRule = document.toObject() as CategoryAssignmentRule;
+    categoryAssignmentRules.push(categoryAssignmentRule);
   }
-  return categoryKeywordEntities;
+  return categoryAssignmentRules;
 }
 
 export const addCategoryToDb = async (category: CategoryEntity): Promise<CategoryEntity> => {
@@ -225,9 +223,9 @@ export const addCategoriesToDb = async (categories: CategoryEntity[]): Promise<a
     });
 }
 
-export const addCategoryKeywordToDb = async (categoryKeywordEntity: CategoryAssignmentRule): Promise<any> => {
-  const categoryKeywordModel = getCategoryAssignmentRuleModel();
-  return categoryKeywordModel.collection.insertOne(categoryKeywordEntity)
+export const addCategoryAssignmentRuleToDb = async (categoryAssignmentRule: CategoryAssignmentRule): Promise<any> => {
+  const categoryAssignmentModel = getCategoryAssignmentRuleModel();
+  return categoryAssignmentModel.collection.insertOne(categoryAssignmentRule)
     .then(() => {
       return Promise.resolve();
     })
@@ -238,19 +236,19 @@ export const addCategoryKeywordToDb = async (categoryKeywordEntity: CategoryAssi
     });
 }
 
-export const updateCategoryKeywordInDb = async (categoryKeywordEntity: CategoryAssignmentRule): Promise<void> => {
-  const categoryKeywordModel = getCategoryAssignmentRuleModel();
-  const query = categoryKeywordModel.findOneAndUpdate(
-    { id: categoryKeywordEntity.id },
-    categoryKeywordEntity
+export const updateCategoryAssignmentRuleInDb = async (categoryAssignmentRule: CategoryAssignmentRule): Promise<void> => {
+  const categoryAssignmentRuleModel = getCategoryAssignmentRuleModel();
+  const query = categoryAssignmentRuleModel.findOneAndUpdate(
+    { id: categoryAssignmentRule.id },
+    categoryAssignmentRule
   )
   await query.exec();
 }
 
-export const deleteCategoryKeywordFromDb = async (categoryKeywordEntity: CategoryAssignmentRule): Promise<void> => {
-  const categoryKeywordModel = getCategoryAssignmentRuleModel();
-  const filter = { id: categoryKeywordEntity.id };
-  await categoryKeywordModel.deleteOne(filter);
+export const deleteCategoryAssignmentRuleFromDb = async (categoryAssignmentRule: CategoryAssignmentRule): Promise<void> => {
+  const categoryAssignmentRuleModel = getCategoryAssignmentRuleModel();
+  const filter = { id: categoryAssignmentRule.id };
+  await categoryAssignmentRuleModel.deleteOne(filter);
 }
 
 export const getDuplicateCreditCardTransactionsDb = async (): Promise<CreditCardTransactionEntity[]> => {

@@ -8,16 +8,16 @@ import {
   getVersion,
   uploadStatement,
   addCategory,
-  addCategoryKeyword,
+  addCategoryAssignmentRule,
   getCategories,
   getDuplicateCreditCardTransactions,
   removeDuplicateCreditCardTransactions,
   addReferencedCategories,
   getMinMaxCheckingAccountTransactionDates,
   getMinMaxCreditCardTransactionDates,
-  getCategoryKeywords,
-  deleteCategoryKeyword,
-  updateCategoryKeyword,
+  getCategoryAssignmentRules,
+  deleteCategoryAssignmentRule,
+  updateCategoryAssignmentRule,
   getCheckingAccountStatements,
   getCreditCardStatements,
   initializeDB,
@@ -39,7 +39,7 @@ export class Routes {
 
     app.get('/api/v1/version', getVersion);
     app.get('/api/v1/categories', getCategories);
-    app.get('/api/v1/categoryKeywords', getCategoryKeywords);
+    app.get('/api/v1/categoryKeywords', getCategoryAssignmentRules);
     app.get('/api/v1/checkingAccountStatements', getCheckingAccountStatements);
     app.get('/api/v1/creditCardStatements', getCreditCardStatements);
     app.get('/api/v1/categorizedTransactions', getCategorizedTransactions);
@@ -52,9 +52,9 @@ export class Routes {
     app.post('/api/v1/creditCardStatement', uploadStatement);
 
     app.post('/api/v1/addCategory', addCategory);
-    app.post('/api/v1/addCategoryKeyword', addCategoryKeyword);
-    app.post('/api/v1/updateCategoryKeyword', updateCategoryKeyword);
-    app.post('/api/v1/deleteCategoryKeyword', deleteCategoryKeyword);
+    app.post('/api/v1/addCategoryKeyword', addCategoryAssignmentRule);
+    app.post('/api/v1/updateCategoryKeyword', updateCategoryAssignmentRule);
+    app.post('/api/v1/deleteCategoryKeyword', deleteCategoryAssignmentRule);
     app.post('/api/v1/removeDuplicateCreditCardTransactions', removeDuplicateCreditCardTransactions);
     app.post('/api/v1/addReferencedCategories', addReferencedCategories);
   }
