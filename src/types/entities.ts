@@ -3,12 +3,12 @@ import { BankTransactionType, DisregardLevel, StatementType } from "enums";
 export interface CategorizedStatementData {
   startDate: string;
   endDate: string;
-  transactions: CategorizedTransactionEntity[];
-  unidentifiedBankTransactions: BankTransactionEntity[];
+  transactions: CategorizedTransaction[];
+  unidentifiedBankTransactions: BankTransaction[];
   netDebits: number;
 }
 
-interface TransactionEntity {
+interface Transaction {
   id: string;
   statementId: string;
   transactionDate: string;
@@ -16,27 +16,27 @@ interface TransactionEntity {
   bankTransactionType: BankTransactionType;
 }
 
-export interface CreditCardTransactionEntity extends TransactionEntity {
+export interface CreditCardTransaction extends Transaction {
   postDate: string;
   category: string;
   description: string;
   type: string;
 }
 
-export interface CheckingAccountTransactionEntity extends TransactionEntity {
+export interface CheckingAccountTransaction extends Transaction {
   transactionType: string;
   name: string;
   memo: string;
 }
 
-export type BankTransactionEntity = CreditCardTransactionEntity | CheckingAccountTransactionEntity;
+export type BankTransaction = CreditCardTransaction | CheckingAccountTransaction;
 
-export interface CategorizedTransactionEntity {
-  bankTransactionEntity: BankTransactionEntity;
-  categoryEntity: CategoryEntity;
+export interface CategorizedTransaction {
+  bankTransaction: BankTransaction;
+  category: Category;
 }
 
-interface StatementEntity {
+interface Statement {
   id: string;
   fileName: string;
   type: StatementType;
@@ -46,14 +46,14 @@ interface StatementEntity {
   netDebits: number;
 }
 
-export type CreditCardStatementEntity = StatementEntity
+export type CreditCardStatement = Statement
 
-export interface CheckingAccountStatementEntity extends StatementEntity {
+export interface CheckingAccountStatement extends Statement {
   checkCount: number;
   atmWithdrawalCount: number;
 }
 
-export interface CategoryEntity {
+export interface Category {
   id: string
   name: string;
   disregardLevel: DisregardLevel;
@@ -65,9 +65,9 @@ export interface CategoryAssignmentRule {
   categoryId: string;
 }
 
-export interface ReviewedTransactionEntities {
-  categorizedTransactions: CategorizedTransactionEntity[];
-  uncategorizedTransactions: BankTransactionEntity[]
+export interface ReviewedTransactions {
+  categorizedTransactions: CategorizedTransaction[];
+  uncategorizedTransactions: BankTransaction[]
 }
 
 export interface MinMaxDates {

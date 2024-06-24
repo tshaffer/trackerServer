@@ -1,10 +1,10 @@
 import {
-  CategoryEntity,
-  CheckingAccountTransactionEntity,
+  Category,
+  CheckingAccountTransaction,
   CategoryAssignmentRule,
-  CreditCardTransactionEntity,
-  CheckingAccountStatementEntity,
-  CreditCardStatementEntity,
+  CreditCardTransaction,
+  CheckingAccountStatement,
+  CreditCardStatement,
   MinMaxDates
 } from 'entities';
 
@@ -18,7 +18,7 @@ import {
 } from '../models';
 import { BankTransactionType } from '../types/enums';
 
-export const addCheckingAccountStatementToDb = async (statement: CheckingAccountStatementEntity): Promise<void> => {
+export const addCheckingAccountStatementToDb = async (statement: CheckingAccountStatement): Promise<void> => {
   const statementModel = getCheckingAccountStatementModel();
   return statementModel.collection.insertOne(statement)
     .then(() => {
@@ -31,7 +31,7 @@ export const addCheckingAccountStatementToDb = async (statement: CheckingAccount
     });
 }
 
-export const addCreditCardStatementToDb = async (statement: CreditCardStatementEntity): Promise<void> => {
+export const addCreditCardStatementToDb = async (statement: CreditCardStatement): Promise<void> => {
   const statementModel = getCreditCardStatementModel();
   return statementModel.collection.insertOne(statement)
     .then(() => {
@@ -44,7 +44,7 @@ export const addCreditCardStatementToDb = async (statement: CreditCardStatementE
     });
 }
 
-export const addCreditCardTransactionsToDb = async (creditCardTransactions: CreditCardTransactionEntity[]): Promise<any> => {
+export const addCreditCardTransactionsToDb = async (creditCardTransactions: CreditCardTransaction[]): Promise<any> => {
   const creditCardTransactionModel = getCreditCardTransactionModel();
   return creditCardTransactionModel.collection.insertMany(creditCardTransactions)
     .then((retVal: any) => {
@@ -73,7 +73,7 @@ export const addCheckingAccountTransactionsToDb = async (checkingAccountTransact
 export const getCheckingAccountTransactionsFromDb = async (
   startDate: string,
   endDate: string,
-): Promise<CheckingAccountTransactionEntity[]> => {
+): Promise<CheckingAccountTransaction[]> => {
 
   let querySpec = {};
 
@@ -86,9 +86,9 @@ export const getCheckingAccountTransactionsFromDb = async (
   const query = checkingAccountTransactionModel.find(querySpec);
 
   const documents: any = await query.exec();
-  const transactions: CheckingAccountTransactionEntity[] = [];
+  const transactions: CheckingAccountTransaction[] = [];
   for (const document of documents) {
-    const transaction: CheckingAccountTransactionEntity = document.toObject() as any;
+    const transaction: CheckingAccountTransaction = document.toObject() as any;
     transaction.bankTransactionType = BankTransactionType.Checking;
     transactions.push(transaction);
   }
@@ -98,7 +98,7 @@ export const getCheckingAccountTransactionsFromDb = async (
 export const getCreditCardTransactionsFromDb = async (
   startDate: string,
   endDate: string,
-): Promise<CreditCardTransactionEntity[]> => {
+): Promise<CreditCardTransaction[]> => {
 
   let querySpec = {};
 
@@ -111,9 +111,9 @@ export const getCreditCardTransactionsFromDb = async (
   const query = creditCardTransactionModel.find(querySpec);
 
   const documents: any = await query.exec();
-  const transactions: CreditCardTransactionEntity[] = [];
+  const transactions: CreditCardTransaction[] = [];
   for (const document of documents) {
-    const transaction: CreditCardTransactionEntity = document.toObject() as CreditCardTransactionEntity;
+    const transaction: CreditCardTransaction = document.toObject() as CreditCardTransaction;
     transaction.bankTransactionType = BankTransactionType.CreditCard;
     transactions.push(transaction);
   }
@@ -121,38 +121,38 @@ export const getCreditCardTransactionsFromDb = async (
 }
 
 export const getCreditCardStatementsFromDb = async (
-): Promise<CreditCardStatementEntity[]> => {
+): Promise<CreditCardStatement[]> => {
 
   const statementModel = getCreditCardStatementModel();
 
   const query = statementModel.find();
 
   const documents: any = await query.exec();
-  const statements: CreditCardStatementEntity[] = [];
+  const statements: CreditCardStatement[] = [];
   for (const document of documents) {
-    const statement: CreditCardStatementEntity = document.toObject() as CreditCardStatementEntity;
+    const statement: CreditCardStatement = document.toObject() as CreditCardStatement;
     statements.push(statement);
   }
   return statements;
 }
 
 export const getCheckingAccountStatementsFromDb = async (
-): Promise<CheckingAccountStatementEntity[]> => {
+): Promise<CheckingAccountStatement[]> => {
 
   const statementModel = getCheckingAccountStatementModel();
 
   const query = statementModel.find();
 
   const documents: any = await query.exec();
-  const statements: CheckingAccountStatementEntity[] = [];
+  const statements: CheckingAccountStatement[] = [];
   for (const document of documents) {
-    const statement: CheckingAccountStatementEntity = document.toObject() as CheckingAccountStatementEntity;
+    const statement: CheckingAccountStatement = document.toObject() as CheckingAccountStatement;
     statements.push(statement);
   }
   return statements;
 }
 
-export const getCategoryByNameFromDb = async (categoryName: string): Promise<CategoryEntity | null> => {
+export const getCategoryByNameFromDb = async (categoryName: string): Promise<Category | null> => {
   const categoryModel = getCategoryModel();
   const querySpec = { name: categoryName }
   const query = categoryModel.find(querySpec);
@@ -161,21 +161,21 @@ export const getCategoryByNameFromDb = async (categoryName: string): Promise<Cat
   if (documents.length === 0) {
     return null;
   }
-  const category: CategoryEntity = documents[0].toObject() as CategoryEntity;
+  const category: Category = documents[0].toObject() as Category;
   return category;
 }
 
 export const getCategoriesFromDb = async (
-): Promise<CategoryEntity[]> => {
+): Promise<Category[]> => {
 
   const categoryModel = getCategoryModel();
 
   const query = categoryModel.find();
 
   const documents: any = await query.exec();
-  const categories: CategoryEntity[] = [];
+  const categories: Category[] = [];
   for (const document of documents) {
-    const category: CategoryEntity = document.toObject() as CategoryEntity;
+    const category: Category = document.toObject() as Category;
     categories.push(category);
   }
   return categories;
@@ -197,7 +197,7 @@ export const getCategoryAssignmentRulesFromDb = async (
   return categoryAssignmentRules;
 }
 
-export const addCategoryToDb = async (category: CategoryEntity): Promise<CategoryEntity> => {
+export const addCategoryToDb = async (category: Category): Promise<Category> => {
   const categoryModel = getCategoryModel();
   return categoryModel.collection.insertOne(category)
     .then(() => {
@@ -210,7 +210,7 @@ export const addCategoryToDb = async (category: CategoryEntity): Promise<Categor
     });
 }
 
-export const addCategoriesToDb = async (categories: CategoryEntity[]): Promise<any> => {
+export const addCategoriesToDb = async (categories: Category[]): Promise<any> => {
   const categoryModel = getCategoryModel();
   return categoryModel.collection.insertMany(categories)
     .then((retVal: any) => {
@@ -251,7 +251,7 @@ export const deleteCategoryAssignmentRuleFromDb = async (categoryAssignmentRule:
   await categoryAssignmentRuleModel.deleteOne(filter);
 }
 
-export const getDuplicateCreditCardTransactionsDb = async (): Promise<CreditCardTransactionEntity[]> => {
+export const getDuplicateCreditCardTransactionsDb = async (): Promise<CreditCardTransaction[]> => {
 
   const creditCardTransactionModel = getCreditCardTransactionModel();
 
@@ -280,7 +280,7 @@ export const getDuplicateCreditCardTransactionsDb = async (): Promise<CreditCard
     }
   ]);
 
-  const transactions: CreditCardTransactionEntity[] = await query.exec();
+  const transactions: CreditCardTransaction[] = await query.exec();
   return transactions;
 }
 
