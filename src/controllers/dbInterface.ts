@@ -152,6 +152,19 @@ export const getCheckingAccountStatementsFromDb = async (
   return statements;
 }
 
+export const getCategoryByNameFromDb = async (categoryName: string): Promise<CategoryEntity | null> => {
+  const categoryModel = getCategoryModel();
+  const querySpec = { keyword: categoryName }
+  const query = categoryModel.find(querySpec);
+
+  const documents: any = await query.exec();
+  if (documents.length === 0) {
+    return null;
+  }
+  const category: CategoryEntity = documents[0].toObject() as CategoryEntity;
+  return category;
+}
+
 export const getCategoriesFromDb = async (
 ): Promise<CategoryEntity[]> => {
 

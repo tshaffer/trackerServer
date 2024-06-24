@@ -20,6 +20,7 @@ import {
   updateCategoryKeyword,
   getCheckingAccountStatements,
   getCreditCardStatements,
+  initializeDB,
 } from '../controllers';
 
 export class Routes {
@@ -45,6 +46,8 @@ export class Routes {
     app.get('/api/v1/duplicateCreditCardTransactions', getDuplicateCreditCardTransactions);
     app.get('/api/v1/minMaxCreditCardTransactionDates', getMinMaxCreditCardTransactionDates);
     app.get('/api/v1/minMaxCheckingAccountTransactionDates', getMinMaxCheckingAccountTransactionDates);
+
+    app.post('/api/v1/initializeDB', initializeDB);
 
     app.post('/api/v1/creditCardStatement', uploadStatement);
 

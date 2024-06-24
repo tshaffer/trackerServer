@@ -38,10 +38,30 @@ import {
   getCreditCardStatementsFromDb,
   getCheckingAccountStatementsFromDb,
   addCreditCardStatementToDb,
-  addCheckingAccountStatementToDb
+  addCheckingAccountStatementToDb,
+  getCategoryByNameFromDb
 } from './dbInterface';
 import { BankTransactionType, DisregardLevel, StatementType } from '../types/enums';
 import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
+
+export const initializeDB = async (request: Request, response: Response, next: any) => {
+  
+  console.log('initializeDB');
+
+  // add Ignore category if it does not already exist
+  const ignoreCategoryName = 'Ignore';
+  const ignoreCategory: CategoryEntity | null = await getCategoryByNameFromDb(ignoreCategoryName);
+  if (isNil(ignoreCategory)) {
+    const id: string = uuidv4();
+    const ignoreCategoryEntity: CategoryEntity = {
+      id: id,
+      keyword: ignoreCategoryName,
+      disregardLevel: DisregardLevel.None,
+    };
+    await addCategoryToDb(ignoreCategoryEntity);
+  }
+  return response.status(200).send();
+}
 
 export const getVersion = (request: Request, response: Response, next: any) => {
   const data: any = {
