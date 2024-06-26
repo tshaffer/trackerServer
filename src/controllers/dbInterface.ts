@@ -306,7 +306,7 @@ export const getMinMaxCheckingAccountTransactionDatesFromDb = async (): Promise<
   return getMinMaxTransactionDatesFromDb(getCheckingAccountTransactionModel());
 }
 
-const getMinMaxTransactionDatesFromDb = async (model: any): Promise<MinMaxDates> => {
+const getMinMaxTransactionDatesFromDb = async (model: any): Promise<MinMaxDates | null> => {
 
   const query = model.aggregate([
     {
@@ -320,6 +320,12 @@ const getMinMaxTransactionDatesFromDb = async (model: any): Promise<MinMaxDates>
 
   const result: any = await query.exec();
 
+  console.log('getMinMaxTransactionDatesFromDb: ', result);
+
+  if (result.length === 0) {
+    return null;
+  }
+  
   return {
     minDate: result[0].minTransactionDate,
     maxDate: result[0].maxTransactionDate

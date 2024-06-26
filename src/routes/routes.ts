@@ -39,7 +39,7 @@ export class Routes {
 
     app.get('/api/v1/version', getVersion);
     app.get('/api/v1/categories', getCategories);
-    app.get('/api/v1/categoryKeywords', getCategoryAssignmentRules);
+    app.get('/api/v1/categoryAssignmentRules', getCategoryAssignmentRules);
     app.get('/api/v1/checkingAccountStatements', getCheckingAccountStatements);
     app.get('/api/v1/creditCardStatements', getCreditCardStatements);
     app.get('/api/v1/categorizedTransactions', getCategorizedTransactions);
