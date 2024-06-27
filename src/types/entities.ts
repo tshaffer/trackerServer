@@ -67,6 +67,7 @@ export interface CategoryAssignmentRule {
 
 export interface ReviewedTransactions {
   categorizedTransactions: CategorizedTransaction[];
+  ignoredTransactions: BankTransaction[];
   uncategorizedTransactions: BankTransaction[]
 }
 
