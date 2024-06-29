@@ -97,6 +97,53 @@ export const getCheckingAccountStatements = async (request: Request, response: R
 export const uploadStatement = async (request: Request, response: Response, next: any) => {
 
   const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'public/uploads/');
+    },
+    filename: (req, file, cb) => {
+      cb(null, `${Date.now()}-${file.originalname}`);
+    },
+  });
+  
+  const upload = multer({ storage });
+  upload.array('files', 10)(request, response, async (err) => {
+    if (err instanceof multer.MulterError) {
+      console.log('MulterError: ', err);
+      return response.status(500).json(err);
+    } else if (err) {
+      console.log('nonMulterError: ', err);
+      return response.status(500).json(err);
+    } else {
+      console.log('no error on upload');
+    }
+/*
+    const originalFileName: string = request.files[0].originalname;
+    const filePath: string = request.files[0].path;
+    const content: string = fs.readFileSync(filePath).toString();
+
+    const result = Papa.parse(content,
+      {
+        header: false,
+        dynamicTyping: true,
+        transform,
+      });
+
+    return processStatement(originalFileName, result.data as any[])
+      .then(() => {
+        const responseData = {
+          uploadStatus: 'success',
+        };
+        return response.status(200).send(responseData);
+      });
+  */
+    });
+
+  // upload.array('files', 10) ({
+
+  // });
+
+  /*
+  const storage = multer.diskStorage({
     destination: function (req, file, cb) {
       // cb(null, 'public');
       cb(null, '/Users/tedshaffer/Documents/Projects/tracker/trackerServer/public');
@@ -105,9 +152,10 @@ export const uploadStatement = async (request: Request, response: Response, next
       cb(null, 'statement.csv');
     }
   });
+*/
 
-  const upload = multer({ storage: storage }).single('file');
-
+  // const upload = multer({ storage: storage }).single('file');
+/*
   upload(request, response, function (err) {
     if (err instanceof multer.MulterError) {
       console.log('MulterError: ', err);
@@ -139,6 +187,7 @@ export const uploadStatement = async (request: Request, response: Response, next
 
       });
   });
+  */
 };
 
 const processStatement = async (originalFileName: string, csvTransactions: any[]): Promise<string> => {
