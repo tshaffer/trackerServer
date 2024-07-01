@@ -3,22 +3,17 @@ import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { version } from '../version';
 import multer from 'multer';
-import { FileFilterCallback } from 'multer'
 
 import * as fs from 'fs';
 import Papa from 'papaparse';
 import { isNil, isNumber } from 'lodash';
 import {
-  CategorizedStatementData,
   CheckingAccountTransaction,
   Category,
   CategoryAssignmentRule,
   CheckingAccountStatement,
   CreditCardStatement,
   CreditCardTransaction,
-  CategorizedTransaction,
-  BankTransaction,
-  ReviewedTransactions,
   MinMaxDates
 } from '../types';
 import {
@@ -26,7 +21,6 @@ import {
   addCategoryToDb,
   addCheckingAccountTransactionsToDb,
   addCreditCardTransactionsToDb,
-  getCheckingAccountTransactionsFromDb,
   getCategoriesFromDb,
   getCategoryAssignmentRulesFromDb,
   getCreditCardTransactionsFromDb,
@@ -44,7 +38,7 @@ import {
   getCategoryByNameFromDb
 } from './dbInterface';
 import { BankTransactionType, DisregardLevel, StatementType } from '../types/enums';
-import { getIsoDate, isEmptyLine, isValidDate, roundTo } from '../utilities';
+import { getIsoDate, isEmptyLine, isValidDate } from '../utilities';
 
 export const initializeDB = async (request: Request, response: Response, next: any) => {
 
