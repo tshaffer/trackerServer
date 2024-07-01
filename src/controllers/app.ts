@@ -98,10 +98,10 @@ export const uploadStatement = async (request: Request, response: Response, next
 
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, 'public/uploads/');
+      cb(null, 'public/statementUploads/');
     },
     filename: (req, file, cb) => {
-      cb(null, `${Date.now()}-${file.originalname}`);
+      cb(null, file.originalname);
     },
   });
   
