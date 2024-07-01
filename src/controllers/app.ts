@@ -3,6 +3,8 @@ import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { version } from '../version';
 import multer from 'multer';
+import { FileFilterCallback } from 'multer'
+
 import * as fs from 'fs';
 import Papa from 'papaparse';
 import { isNil, isNumber } from 'lodash';
@@ -104,9 +106,9 @@ export const uploadStatement = async (request: Request, response: Response, next
       cb(null, file.originalname);
     },
   });
-  
+
   const upload = multer({ storage });
-  upload.array('files', 10)(request, response, async (err) => {
+  upload.array('files')(request, response, async (err) => {
     if (err instanceof multer.MulterError) {
       console.log('MulterError: ', err);
       return response.status(500).json(err);
@@ -115,79 +117,30 @@ export const uploadStatement = async (request: Request, response: Response, next
       return response.status(500).json(err);
     } else {
       console.log('no error on upload');
-    }
-/*
-    const originalFileName: string = request.files[0].originalname;
-    const filePath: string = request.files[0].path;
-    const content: string = fs.readFileSync(filePath).toString();
+      console.log(request.files.length);
 
-    const result = Papa.parse(content,
-      {
-        header: false,
-        dynamicTyping: true,
-        transform,
-      });
+      const uploadedStatementFiles: Express.Multer.File[] = (request as any).files;
+      for (const uploadedStatementFile of uploadedStatementFiles) {
+        const originalFileName: string = uploadedStatementFile.originalname;
+        const filePath: string = uploadedStatementFile.path;
+        const content: string = fs.readFileSync(filePath).toString();
+        const result: Papa.ParseResult<any> = Papa.parse(content,
+          {
+            header: false,
+            dynamicTyping: true,
+            transform,
+          });
 
-    return processStatement(originalFileName, result.data as any[])
-      .then(() => {
-        const responseData = {
-          uploadStatus: 'success',
-        };
-        return response.status(200).send(responseData);
-      });
-  */
-    });
-
-  // upload.array('files', 10) ({
-
-  // });
-
-  /*
-  const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      // cb(null, 'public');
-      cb(null, '/Users/tedshaffer/Documents/Projects/tracker/trackerServer/public');
-    },
-    filename: function (req, file, cb) {
-      cb(null, 'statement.csv');
+        // TEDTODO - check result for errors
+        const statementId: string = await processStatement(originalFileName, result.data as any[])
+      }
+      
+      const responseData = {
+        uploadStatus: 'success',
+      };
+      return response.status(200).send(responseData);
     }
   });
-*/
-
-  // const upload = multer({ storage: storage }).single('file');
-/*
-  upload(request, response, function (err) {
-    if (err instanceof multer.MulterError) {
-      console.log('MulterError: ', err);
-      return response.status(500).json(err);
-    } else if (err) {
-      console.log('nonMulterError: ', err);
-      return response.status(500).json(err);
-    }
-
-    const originalFileName: string = request.file.originalname;
-    // const filePath: string = path.join('public', 'creditCardStatement.csv');
-    const filePath: string = '/Users/tedshaffer/Documents/Projects/tracker/trackerServer/public/statement.csv';
-    const content: string = fs.readFileSync(filePath).toString();
-
-    const result = Papa.parse(content,
-      {
-        header: false,
-        dynamicTyping: true,
-        transform,
-      });
-
-
-    return processStatement(originalFileName, result.data as any[])
-      .then(() => {
-        const responseData = {
-          uploadStatus: 'success',
-        };
-        return response.status(200).send(responseData);
-
-      });
-  });
-  */
 };
 
 const processStatement = async (originalFileName: string, csvTransactions: any[]): Promise<string> => {
