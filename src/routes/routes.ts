@@ -49,7 +49,7 @@ export class Routes {
 
     app.post('/api/v1/initializeDB', initializeDB);
 
-    app.post('/api/v1/creditCardStatement', uploadStatement);
+    app.post('/api/v1/statement', uploadStatement);
 
     app.post('/api/v1/addCategory', addCategory);
     app.post('/api/v1/addCategoryAssignmentRule', addCategoryAssignmentRule);

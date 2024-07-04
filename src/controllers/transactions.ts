@@ -10,7 +10,9 @@ export const getCategorizedTransactions = async (request: Request, response: Res
 
   const startDate: string | null = request.query.startDate ? request.query.startDate as string : null;
   const endDate: string | null = request.query.endDate ? request.query.endDate as string : null;
-
+  const includeCreditCardTransactions: boolean = request.query.includeCreditCardTransactions ? request.query.includeCreditCardTransactions as string === 'true' : false;
+  const includeCheckingAccountTransactions: boolean = request.query.includeCheckingAccountTransactions ? request.query.includeCheckingAccountTransactions as string === 'true' : false;
+  
   const allCategories: Category[] = await getCategoriesFromDb();
   const categories: Category[] = [];
   for (const category of allCategories) {
@@ -28,8 +30,8 @@ export const getCategorizedTransactions = async (request: Request, response: Res
 
   const categoryAssignmentRules: CategoryAssignmentRule[] = await getCategoryAssignmentRulesFromDb();
 
-  const checkingAccountTransactions: BankTransaction[] = await getCheckingAccountTransactionsFromDb(startDate, endDate);
-  const creditCardTransactions: BankTransaction[] = await getCreditCardTransactionsFromDb(startDate, endDate);
+  const checkingAccountTransactions: BankTransaction[] = includeCheckingAccountTransactions ? await getCheckingAccountTransactionsFromDb(startDate, endDate): [];
+  const creditCardTransactions: BankTransaction[] = includeCreditCardTransactions ? await getCreditCardTransactionsFromDb(startDate, endDate) : [];
   const allTransactions: BankTransaction[] = checkingAccountTransactions.concat(creditCardTransactions);
 
   const reviewedTransactionEntities: ReviewedTransactions = categorizeTransactions(allTransactions, categories, ignoreCategory, categoryAssignmentRules);
