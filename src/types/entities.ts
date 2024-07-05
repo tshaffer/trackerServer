@@ -1,4 +1,4 @@
-import { BankTransactionType, DisregardLevel, StatementType } from "enums";
+import { BankTransactionType, CheckingAccountTransactionType, DisregardLevel, StatementType } from "enums";
 
 export interface CategorizedStatementData {
   startDate: string;
@@ -27,6 +27,13 @@ export interface CheckingAccountTransaction extends Transaction {
   transactionType: string;
   name: string;
   memo: string;
+  checkingAccountTransactionType: CheckingAccountTransactionType;
+}
+
+export interface CheckTransaction extends CheckingAccountTransaction {
+  checkNumber: string;
+  payee: string;
+  // category??
 }
 
 export type BankTransaction = CreditCardTransaction | CheckingAccountTransaction;

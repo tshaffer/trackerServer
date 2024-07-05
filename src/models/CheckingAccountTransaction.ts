@@ -10,10 +10,13 @@ const CheckingAccountTransactionSchema = new Schema(
     id: { type: String, required: true },
     statementId: { type: String, required: true },
     transactionDate: { type: String, required: true },
+    amount: { type: Number, required: true },
     transactionType: { type: String, required: true },
     name: { type: String, required: true },
     memo: { type: String, required: true },
-    netDebits: { type: Number, required: true },
+    checkingAccountTransactionType: { type: String, required: true },
+    checkNumber: { type: String, required: true },
+    payee: { type: String, required: true },
   },
 );
 

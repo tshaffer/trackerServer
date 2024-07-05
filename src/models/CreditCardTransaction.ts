@@ -10,11 +10,11 @@ const CreditCardTransactionSchema = new Schema(
     id: { type: String, required: true },
     statementId: { type: String, required: true },
     transactionDate: { type: String, required: true },
+    amount: { type: Number, required: true },
     postDate: { type: String, required: true },
-    description: { type: String, required: true },
     category: { type: String, required: true },
+    description: { type: String, required: true },
     type: { type: String, required: true },
-    netDebits: { type: Number, required: true },
   },
 );
 
