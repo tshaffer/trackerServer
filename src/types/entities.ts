@@ -1,4 +1,4 @@
-import { BankTransactionType, CheckingAccountTransactionType, DisregardLevel, StatementType } from "enums";
+import { BankTransactionType, CheckingAccountTransactionType, DisregardLevel, StatementType } from "./enums";
 
 export interface CategorizedStatementData {
   startDate: string;
