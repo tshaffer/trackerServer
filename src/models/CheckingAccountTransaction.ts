@@ -17,6 +17,7 @@ const CheckingAccountTransactionSchema = new Schema(
     checkingAccountTransactionType: { type: String, required: true },
     checkNumber: { type: String, required: true },
     payee: { type: String, required: true },
+    userDescription: { type: String, required: true },
   },
 );
 

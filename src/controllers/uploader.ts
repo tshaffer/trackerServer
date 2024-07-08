@@ -178,6 +178,7 @@ const processCreditCardStatement = async (creditCardStatement: CreditCardStateme
       type,
       amount,
       bankTransactionType: BankTransactionType.CreditCard,
+      userDescription: description,
     };
 
     transactions.push(creditCardTransaction);
@@ -240,6 +241,7 @@ const processCheckingAccountStatement = async (checkingAccountStatement: Checkin
         checkingAccountTransactionType: CheckingAccountTransactionType.Check,
         checkNumber: transactionType,
         payee: 'TBD',
+        userDescription: name,
       };
       transactions.push(checkTransaction);
     } else {
@@ -253,6 +255,7 @@ const processCheckingAccountStatement = async (checkingAccountStatement: Checkin
         amount,
         bankTransactionType: BankTransactionType.Checking,
         checkingAccountTransactionType: CheckingAccountTransactionType.TBD,
+        userDescription: name,
       };
 
       transactions.push(checkingAccountTransaction);

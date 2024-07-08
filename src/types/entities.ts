@@ -14,6 +14,7 @@ interface Transaction {
   transactionDate: string;
   amount: number;
   bankTransactionType: BankTransactionType;
+  userDescription: string;
 }
 
 export interface CreditCardTransaction extends Transaction {

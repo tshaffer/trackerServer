@@ -15,6 +15,7 @@ const CreditCardTransactionSchema = new Schema(
     category: { type: String, required: true },
     description: { type: String, required: true },
     type: { type: String, required: true },
+    userDescription: { type: String, required: true },
   },
 );
 
