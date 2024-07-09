@@ -21,6 +21,7 @@ import {
   getCheckingAccountStatements,
   getCreditCardStatements,
   initializeDB,
+  updateCheckTransaction,
 } from '../controllers';
 
 export class Routes {
@@ -57,5 +58,6 @@ export class Routes {
     app.post('/api/v1/deleteCategoryAssignmentRule', deleteCategoryAssignmentRule);
     app.post('/api/v1/removeDuplicateCreditCardTransactions', removeDuplicateCreditCardTransactions);
     app.post('/api/v1/addReferencedCategories', addReferencedCategories);
+    app.post('/api/v1/updateCheckTransaction', updateCheckTransaction);
   }
 }

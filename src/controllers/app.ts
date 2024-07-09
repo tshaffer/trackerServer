@@ -7,8 +7,10 @@ import { isNil } from 'lodash';
 import {
   Category,
   CategoryAssignmentRule,
+  CheckTransaction,
   CheckingAccountStatement,
-  CreditCardStatement} from '../types';
+  CreditCardStatement
+} from '../types';
 import {
   addCategoryAssignmentRuleToDb,
   addCategoryToDb,
@@ -20,7 +22,8 @@ import {
   updateCategoryAssignmentRuleInDb,
   getCreditCardStatementsFromDb,
   getCheckingAccountStatementsFromDb,
-  getCategoryByNameFromDb
+  getCategoryByNameFromDb,
+  updateCheckTransactionInDb
 } from './dbInterface';
 import { DisregardLevel } from '../types/enums';
 
@@ -126,4 +129,10 @@ export const getMinMaxCreditCardTransactionDates = async (request: Request, resp
 export const getMinMaxCheckingAccountTransactionDates = async (request: Request, response: Response, next: any) => {
   const minMaxTransactionDates = await getMinMaxCheckingAccountTransactionDatesFromDb();
   response.json(minMaxTransactionDates);
+}
+
+export const updateCheckTransaction = async (request: Request, response: Response, next: any) => {
+  const { checkTransaction } = request.body;
+  await updateCheckTransactionInDb(checkTransaction);
+  return response.status(200).send();
 }

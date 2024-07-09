@@ -5,7 +5,8 @@ import {
   CreditCardTransaction,
   CheckingAccountStatement,
   CreditCardStatement,
-  MinMaxDates
+  MinMaxDates,
+  CheckTransaction
 } from 'entities';
 
 import {
@@ -68,6 +69,15 @@ export const addCheckingAccountTransactionsToDb = async (checkingAccountTransact
       debugger;
       return null;
     });
+}
+
+export const updateCheckTransactionInDb = async (checkTransaction: CheckTransaction): Promise<void> => {
+  const checkingAccountTransactionModel = getCheckingAccountTransactionModel();
+  const query = checkingAccountTransactionModel.findOneAndUpdate(
+    { id: checkTransaction.id },
+    checkTransaction
+  )
+  await query.exec();
 }
 
 export const getCheckingAccountTransactionsFromDb = async (
@@ -325,7 +335,7 @@ const getMinMaxTransactionDatesFromDb = async (model: any): Promise<MinMaxDates 
   if (result.length === 0) {
     return null;
   }
-  
+
   return {
     minDate: result[0].minTransactionDate,
     maxDate: result[0].maxTransactionDate
