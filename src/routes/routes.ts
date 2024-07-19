@@ -4,7 +4,6 @@ import {
   getCSS,
   getBundle,
   getBundleMap,
-  getCategorizedTransactions,
   getVersion,
   uploadStatement,
   addCategory,
@@ -45,7 +44,6 @@ export class Routes {
     app.get('/api/v1/categoryAssignmentRules', getCategoryAssignmentRules);
     app.get('/api/v1/checkingAccountStatements', getCheckingAccountStatements);
     app.get('/api/v1/creditCardStatements', getCreditCardStatements);
-    app.get('/api/v1/categorizedTransactions', getCategorizedTransactions);
     app.get('/api/v1/duplicateCreditCardTransactions', getDuplicateCreditCardTransactions);
     app.get('/api/v1/minMaxCreditCardTransactionDates', getMinMaxCreditCardTransactionDates);
     app.get('/api/v1/minMaxCheckingAccountTransactionDates', getMinMaxCheckingAccountTransactionDates);

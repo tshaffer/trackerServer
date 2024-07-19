@@ -131,7 +131,10 @@ export const getMinMaxCheckingAccountTransactionDates = async (request: Request,
 }
 
 export const updateTransaction = async (request: Request, response: Response, next: any) => {
-  const { transaction } = request.body;
-  await updateTransactionInDb(transaction);
+  if (request.body.transation) {
+    await updateTransactionInDb(request.body.transaction);
+  } else {
+    await updateTransactionInDb(request.body.checkTransaction);
+  }
   return response.status(200).send();
 }

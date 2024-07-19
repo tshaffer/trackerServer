@@ -1,13 +1,5 @@
 import { BankTransactionType, CheckingAccountTransactionType, DisregardLevel, StatementType } from "./enums";
 
-export interface CategorizedStatementData {
-  startDate: string;
-  endDate: string;
-  transactions: CategorizedTransaction[];
-  unidentifiedBankTransactions: BankTransaction[];
-  netDebits: number;
-}
-
 interface Transaction {
   id: string;
   statementId: string;
@@ -34,15 +26,9 @@ export interface CheckingAccountTransaction extends Transaction {
 export interface CheckTransaction extends CheckingAccountTransaction {
   checkNumber: string;
   payee: string;
-  // category??
 }
 
 export type BankTransaction = CreditCardTransaction | CheckingAccountTransaction;
-
-export interface CategorizedTransaction {
-  bankTransaction: BankTransaction;
-  category: Category;
-}
 
 interface Statement {
   id: string;
@@ -71,12 +57,6 @@ export interface CategoryAssignmentRule {
   id: string;
   pattern: string;
   categoryId: string;
-}
-
-export interface ReviewedTransactions {
-  categorizedTransactions: CategorizedTransaction[];
-  ignoredTransactions: BankTransaction[];
-  uncategorizedTransactions: BankTransaction[]
 }
 
 export interface MinMaxDates {
