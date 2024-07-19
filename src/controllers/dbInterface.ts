@@ -6,8 +6,8 @@ import {
   CheckingAccountStatement,
   CreditCardStatement,
   MinMaxDates,
-  CheckTransaction
-} from 'entities';
+  BankTransaction
+} from '../types';
 
 import {
   getCreditCardTransactionModel,
@@ -71,12 +71,22 @@ export const addCheckingAccountTransactionsToDb = async (checkingAccountTransact
     });
 }
 
-export const updateCheckTransactionInDb = async (checkTransaction: CheckTransaction): Promise<void> => {
-  const checkingAccountTransactionModel = getCheckingAccountTransactionModel();
-  const query = checkingAccountTransactionModel.findOneAndUpdate(
-    { id: checkTransaction.id },
-    checkTransaction
-  )
+export const updateTransactionInDb = async (transaction: BankTransaction): Promise<void> => {
+  let query;
+  if (transaction.bankTransactionType === BankTransactionType.CreditCard) {
+    const creditCardTransactionModel = getCreditCardTransactionModel();
+    query = creditCardTransactionModel.findOneAndUpdate(
+      { id: transaction.id },
+      transaction
+    );
+  } else {
+    const checkingAccountTransactionModel = getCheckingAccountTransactionModel();
+    query = checkingAccountTransactionModel.findOneAndUpdate(
+      { id: transaction.id },
+      transaction
+    )
+
+  }
   await query.exec();
 }
 

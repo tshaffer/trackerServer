@@ -23,7 +23,7 @@ import {
   getCreditCardStatementsFromDb,
   getCheckingAccountStatementsFromDb,
   getCategoryByNameFromDb,
-  updateCheckTransactionInDb
+  updateTransactionInDb
 } from './dbInterface';
 import { DisregardLevel } from '../types/enums';
 
@@ -131,8 +131,8 @@ export const getMinMaxCheckingAccountTransactionDates = async (request: Request,
   response.json(minMaxTransactionDates);
 }
 
-export const updateCheckTransaction = async (request: Request, response: Response, next: any) => {
-  const { checkTransaction } = request.body;
-  await updateCheckTransactionInDb(checkTransaction);
+export const updateTransaction = async (request: Request, response: Response, next: any) => {
+  const { transaction } = request.body;
+  await updateTransactionInDb(transaction);
   return response.status(200).send();
 }
