@@ -7,7 +7,6 @@ import { isNil } from 'lodash';
 import {
   Category,
   CategoryAssignmentRule,
-  CheckTransaction,
   CheckingAccountStatement,
   CreditCardStatement
 } from '../types';
