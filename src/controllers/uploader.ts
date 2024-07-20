@@ -374,6 +374,7 @@ const executeAddReferencedCategories = async () => {
     return {
       id: uuidv4(),
       name,
+      parentId: '',
       disregardLevel: DisregardLevel.None,
     };
   });

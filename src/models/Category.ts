@@ -9,6 +9,7 @@ const CategorySchema = new Schema(
   {
     id: { type: String, required: true },
     name: { type: String, required: true },
+    parentId: { type: String, required: true },
     disregardLevel: { type: Number, required: true },
   },
 );
