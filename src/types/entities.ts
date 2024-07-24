@@ -7,6 +7,8 @@ interface Transaction {
   amount: number;
   bankTransactionType: BankTransactionType;
   userDescription: string;
+  overrideCategory: boolean;
+  overrideCategoryId: string;
 }
 
 export interface CreditCardTransaction extends Transaction {

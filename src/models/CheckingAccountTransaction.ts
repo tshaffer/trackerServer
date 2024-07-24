@@ -18,6 +18,8 @@ const CheckingAccountTransactionSchema = new Schema(
     checkNumber: { type: String, required: true },
     payee: { type: String, required: true },
     userDescription: { type: String, required: true },
+    overrideCategory:  { type: Boolean, required: true },
+    overrideCategoryId:  { type: String, required: true },
   },
 );
 

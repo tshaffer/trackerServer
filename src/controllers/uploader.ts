@@ -179,7 +179,9 @@ const processCreditCardStatement = async (creditCardStatement: CreditCardStateme
       amount,
       bankTransactionType: BankTransactionType.CreditCard,
       userDescription: description,
-    };
+      overrideCategory: false,
+      overrideCategoryId: '',
+  };
 
     transactions.push(creditCardTransaction);
   }
@@ -242,6 +244,8 @@ const processCheckingAccountStatement = async (checkingAccountStatement: Checkin
         checkNumber: transactionType,
         payee: 'TBD',
         userDescription: name,
+        overrideCategory: false,
+        overrideCategoryId: '',
       };
       transactions.push(checkTransaction);
     } else {
@@ -256,6 +260,8 @@ const processCheckingAccountStatement = async (checkingAccountStatement: Checkin
         bankTransactionType: BankTransactionType.Checking,
         checkingAccountTransactionType: CheckingAccountTransactionType.TBD,
         userDescription: name,
+        overrideCategory: false,
+        overrideCategoryId: '',
       };
 
       transactions.push(checkingAccountTransaction);
