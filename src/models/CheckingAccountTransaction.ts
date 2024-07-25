@@ -20,6 +20,8 @@ const CheckingAccountTransactionSchema = new Schema(
     userDescription: { type: String, required: true },
     overrideCategory:  { type: Boolean, required: true },
     overrideCategoryId:  { type: String, required: true },
+    overrideTransactionsRequired:  { type: Boolean, required: true },
+    overriddenTransactionRequired:  { type: Boolean, required: true },
   },
 );
 

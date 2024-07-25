@@ -9,6 +9,8 @@ interface Transaction {
   userDescription: string;
   overrideCategory: boolean;
   overrideCategoryId: string;
+  overrideTransactionsRequired: boolean;
+  overriddenTransactionRequired: boolean;
 }
 
 export interface CreditCardTransaction extends Transaction {
