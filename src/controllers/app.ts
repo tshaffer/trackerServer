@@ -37,6 +37,7 @@ export const initializeDB = async (request: Request, response: Response, next: a
       id: id,
       name: ignoreCategoryName,
       parentId: '',
+      transactionsRequired: false,
       disregardLevel: DisregardLevel.None,
     };
     await addCategoryToDb(ignoreCategory);
@@ -78,11 +79,12 @@ export const getCheckingAccountStatements = async (request: Request, response: R
 };
 
 export const addCategory = async (request: Request, response: Response, next: any) => {
-  const { id, name, parentId } = request.body;
+  const { id, name, parentId, transactionsRequired } = request.body;
   const category: Category = {
     id,
     name,
     parentId,
+    transactionsRequired,
     disregardLevel: DisregardLevel.None
   };
   const addedCategory: Category = await addCategoryToDb(category);
