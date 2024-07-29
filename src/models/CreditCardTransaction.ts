@@ -20,6 +20,8 @@ const CreditCardTransactionSchema = new Schema(
     overrideCategoryId:  { type: String, required: true },
     overrideTransactionsRequired:  { type: Boolean, required: true },
     overriddenTransactionRequired:  { type: Boolean, required: true },
+    isSplit: { type: Boolean, required: true },
+    parentTransactionId: { type: String, required: true },
   },
 );
 

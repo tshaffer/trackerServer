@@ -11,6 +11,15 @@ interface Transaction {
   overrideCategoryId: string;
   overrideTransactionsRequired: boolean;
   overriddenTransactionRequired: boolean;
+  isSplit: boolean;
+  parentTransactionId: string;
+}
+
+export interface SplitTransaction {
+  id: string;
+  parentTransactionId: string;
+  amount: number;
+  userDescription: string;
 }
 
 export interface CreditCardTransaction extends Transaction {

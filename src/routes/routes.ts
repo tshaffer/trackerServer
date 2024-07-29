@@ -21,6 +21,7 @@ import {
   getCreditCardStatements,
   initializeDB,
   updateTransaction,
+  splitTransaction,
   getTransactions,
 } from '../controllers';
 
@@ -59,5 +60,6 @@ export class Routes {
     app.post('/api/v1/removeDuplicateCreditCardTransactions', removeDuplicateCreditCardTransactions);
     app.post('/api/v1/addReferencedCategories', addReferencedCategories);
     app.post('/api/v1/updateTransaction', updateTransaction);
+    app.post('/api/v1/splitTransaction', splitTransaction);
   }
 }

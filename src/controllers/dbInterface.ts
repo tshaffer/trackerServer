@@ -6,7 +6,8 @@ import {
   CheckingAccountStatement,
   CreditCardStatement,
   MinMaxDates,
-  BankTransaction
+  BankTransaction,
+  SplitTransaction
 } from '../types';
 
 import {
@@ -18,6 +19,7 @@ import {
   getCreditCardStatementModel
 } from '../models';
 import { BankTransactionType } from '../types/enums';
+import { splitTransaction } from './app';
 
 export const addCheckingAccountStatementToDb = async (statement: CheckingAccountStatement): Promise<void> => {
   const statementModel = getCheckingAccountStatementModel();
@@ -352,5 +354,20 @@ const getMinMaxTransactionDatesFromDb = async (model: any): Promise<MinMaxDates 
   };
 }
 
+export const splitTransactionInDb = async (parentTransactionId: string, splitTransactions: SplitTransaction[]) => {
+  await setIsSplitInDb(parentTransactionId);
+  await addCheckingAccountTransactionsToDb(splitTransactions);
+}
 
-
+const setIsSplitInDb = async (transactionId: string) => {
+  const model = getCheckingAccountTransactionModel();
+  try {
+    await model.updateOne(
+      { id: transactionId },
+      { $set: { isSplit: true } }
+    );
+    console.log('Transaction updated successfully');
+  } catch (error) {
+    console.error('Error updating transaction:', error);
+  }
+}

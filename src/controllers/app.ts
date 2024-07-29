@@ -8,7 +8,8 @@ import {
   Category,
   CategoryAssignmentRule,
   CheckingAccountStatement,
-  CreditCardStatement
+  CreditCardStatement,
+  SplitTransaction
 } from '../types';
 import {
   addCategoryAssignmentRuleToDb,
@@ -22,7 +23,8 @@ import {
   getCreditCardStatementsFromDb,
   getCheckingAccountStatementsFromDb,
   getCategoryByNameFromDb,
-  updateTransactionInDb
+  updateTransactionInDb,
+  splitTransactionInDb
 } from './dbInterface';
 import { DisregardLevel } from '../types/enums';
 
@@ -140,5 +142,16 @@ export const updateTransaction = async (request: Request, response: Response, ne
   } else {
     await updateTransactionInDb(request.body.checkTransaction);
   }
+  return response.status(200).send();
+}
+
+export const splitTransaction = async (request: Request, response: Response, next: any) => {
+  console.log('splitTransaction');
+  console.log(request.body);
+
+  const parentTransactionId = request.body.parentTransactionId;
+  const splitTransactions: SplitTransaction[] = request.body.newTransactions
+  await splitTransactionInDb(parentTransactionId, splitTransactions);
+
   return response.status(200).send();
 }

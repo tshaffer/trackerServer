@@ -183,7 +183,9 @@ const processCreditCardStatement = async (creditCardStatement: CreditCardStateme
       overrideCategoryId: '',
       overrideTransactionsRequired: false,
       overriddenTransactionRequired: false,
-  };
+      isSplit: false,
+      parentTransactionId: '',
+    };
 
     transactions.push(creditCardTransaction);
   }
@@ -250,7 +252,9 @@ const processCheckingAccountStatement = async (checkingAccountStatement: Checkin
         overrideCategoryId: '',
         overrideTransactionsRequired: false,
         overriddenTransactionRequired: false,
-      };
+        isSplit: false,
+        parentTransactionId: '',
+        };
       transactions.push(checkTransaction);
     } else {
       const checkingAccountTransaction: CheckingAccountTransaction = {
@@ -268,6 +272,8 @@ const processCheckingAccountStatement = async (checkingAccountStatement: Checkin
         overrideCategoryId: '',
         overrideTransactionsRequired: false,
         overriddenTransactionRequired: false,
+        isSplit: false,
+        parentTransactionId: '',
       };
 
       transactions.push(checkingAccountTransaction);
