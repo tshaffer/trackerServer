@@ -25,7 +25,8 @@ import {
   getCategoryByNameFromDb,
   updateTransactionInDb,
   splitTransactionInDb,
-  replaceCategoryAssignmentRulesInDb
+  replaceCategoryAssignmentRulesInDb,
+  addCategoriesToDb
 } from './dbInterface';
 import { DisregardLevel } from '../types/enums';
 
@@ -92,6 +93,12 @@ export const addCategory = async (request: Request, response: Response, next: an
   };
   const addedCategory: Category = await addCategoryToDb(category);
   return response.json(addedCategory)
+}
+
+export const addCategories = async (request: Request, response: Response, next: any) => {
+  const categories = request.body;
+  await addCategoriesToDb(categories);
+  return response.status(200).send();
 }
 
 export const addCategoryAssignmentRule = async (request: Request, response: Response, next: any) => {

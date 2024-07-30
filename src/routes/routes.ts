@@ -24,6 +24,7 @@ import {
   splitTransaction,
   getTransactions,
   replaceCategoryAssignmentRules,
+  addCategories,
 } from '../controllers';
 
 export class Routes {
@@ -55,6 +56,7 @@ export class Routes {
     app.post('/api/v1/statement', uploadStatement);
 
     app.post('/api/v1/addCategory', addCategory);
+    app.post('/api/v1/addCategories', addCategories);
     app.post('/api/v1/addCategoryAssignmentRule', addCategoryAssignmentRule);
     app.post('/api/v1/updateCategoryAssignmentRule', updateCategoryAssignmentRule);
     app.post('/api/v1/deleteCategoryAssignmentRule', deleteCategoryAssignmentRule);
