@@ -258,6 +258,27 @@ export const addCategoryAssignmentRuleToDb = async (categoryAssignmentRule: Cate
     });
 }
 
+export const replaceCategoryAssignmentRulesInDb = async (categoryAssignmentRules: CategoryAssignmentRule[]): Promise<any> => {
+ 
+  const categoryAssignmentModel = getCategoryAssignmentRuleModel();
+
+  try {
+    // Delete all existing documents in the collection
+    await categoryAssignmentModel.collection.deleteMany({});
+
+    // Insert the new rules
+    if (categoryAssignmentRules.length > 0) {
+      await categoryAssignmentModel.collection.insertMany(categoryAssignmentRules);
+    }
+
+    return Promise.resolve();
+  } catch (error: any) {
+    console.log('db replace error: ', error);
+    debugger;
+    return Promise.reject(error);
+  }
+};
+
 export const updateCategoryAssignmentRuleInDb = async (categoryAssignmentRule: CategoryAssignmentRule): Promise<void> => {
   const categoryAssignmentRuleModel = getCategoryAssignmentRuleModel();
   const query = categoryAssignmentRuleModel.findOneAndUpdate(
