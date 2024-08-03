@@ -181,8 +181,8 @@ const processCreditCardStatement = async (creditCardStatement: CreditCardStateme
       userDescription: description,
       overrideCategory: false,
       overrideCategoryId: '',
-      overrideTransactionsRequired: false,
-      overriddenTransactionRequired: false,
+      overrideFixedExpense: false,
+      overriddenFixedExpense: false,
     };
 
     transactions.push(creditCardTransaction);
@@ -248,11 +248,11 @@ const processCheckingAccountStatement = async (checkingAccountStatement: Checkin
         userDescription: name,
         overrideCategory: false,
         overrideCategoryId: '',
-        overrideTransactionsRequired: false,
-        overriddenTransactionRequired: false,
+        overrideFixedExpense: false,
+        overriddenFixedExpense: false,
         isSplit: false,
         parentTransactionId: '',
-        };
+      };
       transactions.push(checkTransaction);
     } else {
       const checkingAccountTransaction: CheckingAccountTransaction = {
@@ -268,8 +268,8 @@ const processCheckingAccountStatement = async (checkingAccountStatement: Checkin
         userDescription: name,
         overrideCategory: false,
         overrideCategoryId: '',
-        overrideTransactionsRequired: false,
-        overriddenTransactionRequired: false,
+        overrideFixedExpense: false,
+        overriddenFixedExpense: false,
         isSplit: false,
         parentTransactionId: '',
       };
