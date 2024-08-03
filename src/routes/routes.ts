@@ -25,6 +25,7 @@ import {
   getTransactions,
   replaceCategoryAssignmentRules,
   addCategories,
+  updateCategoryInTransactions,
 } from '../controllers';
 
 export class Routes {
@@ -64,6 +65,7 @@ export class Routes {
     app.post('/api/v1/removeDuplicateCreditCardTransactions', removeDuplicateCreditCardTransactions);
     app.post('/api/v1/addReferencedCategories', addReferencedCategories);
     app.post('/api/v1/updateTransaction', updateTransaction);
+    app.post('/api/v1/updateCategoryInTransactions', updateCategoryInTransactions);
     app.post('/api/v1/splitTransaction', splitTransaction);
   }
 }

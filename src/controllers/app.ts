@@ -26,7 +26,8 @@ import {
   updateTransactionInDb,
   splitTransactionInDb,
   replaceCategoryAssignmentRulesInDb,
-  addCategoriesToDb
+  addCategoriesToDb,
+  updateCategoryInTransactionsInDb
 } from './dbInterface';
 import { DisregardLevel } from '../types/enums';
 
@@ -156,6 +157,12 @@ export const updateTransaction = async (request: Request, response: Response, ne
   } else {
     await updateTransactionInDb(request.body.checkTransaction);
   }
+  return response.status(200).send();
+}
+
+export const updateCategoryInTransactions = async (request: Request, response: Response, next: any) => {
+  await updateCategoryInTransactionsInDb(request.body.categoryId, request.body.transactionIds);
+  
   return response.status(200).send();
 }
 

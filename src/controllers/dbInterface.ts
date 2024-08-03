@@ -92,6 +92,20 @@ export const updateTransactionInDb = async (transaction: BankTransaction): Promi
   await query.exec();
 }
 
+export const updateCategoryInTransactionsInDb = async (categoryId: string, transactionIds: string[]): Promise<void> => {
+  try {
+    const creditCardTransactionModel = getCreditCardTransactionModel();
+    await creditCardTransactionModel.updateMany(
+      { id: { $in: transactionIds } },
+      { $set: { overrideCategory: true, overrideCategoryId: categoryId } }
+    );
+    console.log(`Updated transactions with ids ${transactionIds.join(', ')} to have category id ${categoryId}`);
+  } catch (error) {
+    console.error('Error updating transactions:', error);
+    throw error;
+  }
+};
+
 export const getCheckingAccountTransactionsFromDb = async (
   startDate: string,
   endDate: string,
