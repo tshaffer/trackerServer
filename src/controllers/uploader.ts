@@ -183,8 +183,6 @@ const processCreditCardStatement = async (creditCardStatement: CreditCardStateme
       overrideCategoryId: '',
       overrideTransactionsRequired: false,
       overriddenTransactionRequired: false,
-      isSplit: false,
-      parentTransactionId: '',
     };
 
     transactions.push(creditCardTransaction);

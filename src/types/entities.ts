@@ -11,8 +11,6 @@ interface Transaction {
   overrideCategoryId: string;
   overrideTransactionsRequired: boolean;
   overriddenTransactionRequired: boolean;
-  isSplit: boolean;
-  parentTransactionId: string;
 }
 
 export interface SplitTransaction {
@@ -34,6 +32,8 @@ export interface CheckingAccountTransaction extends Transaction {
   name: string;
   memo: string;
   checkingAccountTransactionType: CheckingAccountTransactionType;
+  isSplit: boolean;
+  parentTransactionId: string;
 }
 
 export interface CheckTransaction extends CheckingAccountTransaction {
