@@ -20,6 +20,7 @@ const CreditCardTransactionSchema = new Schema(
     overrideCategoryId:  { type: String, required: true },
     overrideFixedExpense:  { type: Boolean, required: true },
     overriddenFixedExpense:  { type: Boolean, required: true },
+    excludeFromReportCalculations: { type: Boolean, required: true },
   },
 );
 
