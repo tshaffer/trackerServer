@@ -9,8 +9,6 @@ interface Transaction {
   userDescription: string;
   overrideCategory: boolean;
   overrideCategoryId: string;
-  overrideFixedExpense: boolean;
-  overriddenFixedExpense: boolean;
 }
 
 export interface SplitTransaction {
