@@ -53,7 +53,7 @@ interface Statement {
   netDebits: number;
 }
 
-export type CreditCardStatement = Statement
+export type CreditCardStatement = Statement;
 
 export interface CheckingAccountStatement extends Statement {
   checkCount: number;
