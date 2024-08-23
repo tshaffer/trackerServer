@@ -19,6 +19,13 @@ const CreditCardTransactionSchema = new Schema(
     overrideCategory:  { type: Boolean, required: true },
     overrideCategoryId:  { type: String, required: true },
     excludeFromReportCalculations: { type: Boolean, required: true },
+    discretionariness: { type: Number },
+    consensusNecessity: { type: Number },
+    loriNecessity: { type: Number },
+    tedNecessity: { type: Number },
+    consensusUtility: { type: Number },
+    loriUtility: { type: Number },
+    tedUtility: { type: Number },
   },
 );
 

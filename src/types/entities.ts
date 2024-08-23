@@ -9,6 +9,13 @@ interface Transaction {
   userDescription: string;
   overrideCategory: boolean;
   overrideCategoryId: string;
+  discretionariness?: number;
+  consensusNecessity?: number;
+  loriNecessity?: number;
+  tedNecessity?: number;
+  consensusUtility?: number;
+  loriUtility?: number;
+  tedUtility?: number;
 }
 
 export interface SplitTransaction {
@@ -64,6 +71,13 @@ export interface Category {
   parentId: string;
   transactionsRequired: boolean;
   disregardLevel: DisregardLevel;
+  discretionariness?: number;
+  consensusNecessity?: number;
+  loriNecessity?: number;
+  tedNecessity?: number;
+  consensusUtility?: number;
+  loriUtility?: number;
+  tedUtility?: number;
 }
 
 export interface CategoryAssignmentRule {
