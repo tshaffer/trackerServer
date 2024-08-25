@@ -71,13 +71,9 @@ export interface Category {
   parentId: string;
   transactionsRequired: boolean;
   disregardLevel: DisregardLevel;
-  discretionariness?: number;
-  consensusNecessity?: number;
-  loriNecessity?: number;
-  tedNecessity?: number;
-  consensusUtility?: number;
-  loriUtility?: number;
-  tedUtility?: number;
+  consensusDiscretionariness?: number;
+  loriDiscretionariness?: number;
+  tedDiscretionariness?: number;
 }
 
 export interface CategoryAssignmentRule {

@@ -12,13 +12,9 @@ const CategorySchema = new Schema(
     parentId: { type: String, required: true },
     transactionsRequired: { type: Boolean, required: true },
     disregardLevel: { type: Number, required: true },
-    discretionariness: { type: Number },
-    consensusNecessity: { type: Number },
-    loriNecessity: { type: Number },
-    tedNecessity: { type: Number },
-    consensusUtility: { type: Number },
-    loriUtility: { type: Number },
-    tedUtility: { type: Number },
+    consensusDiscretionariness: { type: Number },
+    loriDiscretionariness: { type: Number },
+    tedDiscretionariness: { type: Number },
     },
 );
 
