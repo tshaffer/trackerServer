@@ -7,7 +7,7 @@ import {
   CreditCardStatement,
   MinMaxDates,
   BankTransaction,
-  SplitTransaction
+  SplitTransaction,
 } from '../types';
 
 import {
@@ -19,7 +19,6 @@ import {
   getCreditCardStatementModel
 } from '../models';
 import { BankTransactionType } from '../types/enums';
-import { splitTransaction } from './app';
 
 export const addCheckingAccountStatementToDb = async (statement: CheckingAccountStatement): Promise<void> => {
   const statementModel = getCheckingAccountStatementModel();
@@ -74,23 +73,56 @@ export const addCheckingAccountTransactionsToDb = async (checkingAccountTransact
 }
 
 export const updateTransactionInDb = async (transaction: BankTransaction): Promise<void> => {
-  let query;
-  if (transaction.bankTransactionType === BankTransactionType.CreditCard) {
-    const creditCardTransactionModel = getCreditCardTransactionModel();
-    query = creditCardTransactionModel.findOneAndUpdate(
-      { id: transaction.id },
-      transaction
-    );
-  } else {
-    const checkingAccountTransactionModel = getCheckingAccountTransactionModel();
-    query = checkingAccountTransactionModel.findOneAndUpdate(
-      { id: transaction.id },
-      transaction
-    )
 
+  if (transaction.bankTransactionType === BankTransactionType.CreditCard) {
+    return updateCreditCardTransactionInDb(transaction as CreditCardTransaction);
+  } else {
+    return updateCheckingAccountTransactionInDb(transaction as CheckingAccountTransaction);
   }
-  await query.exec();
 }
+
+const getTransactionUpdateFields = (transaction: BankTransaction) => {
+
+  const updateFields: any = { ...transaction }; // Spread the general transaction fields
+
+  // Determine which fields to set and unset for Discretionariness properties
+  if (transaction.consensusDiscretionariness === undefined) {
+    updateFields.$set = {
+      loriDiscretionariness: transaction.loriDiscretionariness,
+      tedDiscretionariness: transaction.tedDiscretionariness,
+    };
+    updateFields.$unset = { consensusDiscretionariness: "" };
+  } else {
+    updateFields.$set = {
+      consensusDiscretionariness: transaction.consensusDiscretionariness,
+    };
+    updateFields.$unset = { loriDiscretionariness: "", tedDiscretionariness: "" };
+  }
+
+  return updateFields;
+}
+
+export const updateCreditCardTransactionInDb = async (transaction: CreditCardTransaction): Promise<void> => {
+
+  const updateFields = getTransactionUpdateFields(transaction);
+
+  await getCreditCardTransactionModel().findOneAndUpdate(
+    { id: transaction.id },
+    updateFields,
+    { new: true }
+  ).exec();
+};
+
+export const updateCheckingAccountTransactionInDb = async (transaction: CheckingAccountTransaction): Promise<void> => {
+
+  const updateFields = getTransactionUpdateFields(transaction);
+
+  await getCheckingAccountTransactionModel().findOneAndUpdate(
+    { id: transaction.id },
+    updateFields,
+    { new: true }
+  ).exec();
+};
 
 export const updateCategoryInTransactionsInDb = async (categoryId: string, transactionIds: string[]): Promise<void> => {
   try {
@@ -273,7 +305,7 @@ export const addCategoryAssignmentRuleToDb = async (categoryAssignmentRule: Cate
 }
 
 export const replaceCategoryAssignmentRulesInDb = async (categoryAssignmentRules: CategoryAssignmentRule[]): Promise<any> => {
- 
+
   const categoryAssignmentModel = getCategoryAssignmentRuleModel();
 
   try {

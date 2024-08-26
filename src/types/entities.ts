@@ -1,6 +1,6 @@
 import { BankTransactionType, CheckingAccountTransactionType, DisregardLevel, StatementType } from "./enums";
 
-interface Transaction {
+export interface Transaction {
   id: string;
   statementId: string;
   transactionDate: string;
@@ -9,13 +9,9 @@ interface Transaction {
   userDescription: string;
   overrideCategory: boolean;
   overrideCategoryId: string;
-  discretionariness?: number;
-  consensusNecessity?: number;
-  loriNecessity?: number;
-  tedNecessity?: number;
-  consensusUtility?: number;
-  loriUtility?: number;
-  tedUtility?: number;
+  consensusDiscretionariness?: number;
+  loriDiscretionariness?: number;
+  tedDiscretionariness?: number;
 }
 
 export interface SplitTransaction {
