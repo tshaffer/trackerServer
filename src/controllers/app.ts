@@ -27,7 +27,8 @@ import {
   splitTransactionInDb,
   replaceCategoryAssignmentRulesInDb,
   addCategoriesToDb,
-  updateCategoryInTransactionsInDb
+  updateCategoryInTransactionsInDb,
+  updateCategoryInDb
 } from './dbInterface';
 import { DisregardLevel } from '../types/enums';
 
@@ -84,16 +85,37 @@ export const getCheckingAccountStatements = async (request: Request, response: R
 };
 
 export const addCategory = async (request: Request, response: Response, next: any) => {
-  const { id, name, parentId, transactionsRequired } = request.body;
+  const { id, name, parentId, transactionsRequired, consensusDiscretionariness, loriDiscretionariness, tedDiscretionariness } = request.body;
   const category: Category = {
     id,
     name,
     parentId,
     transactionsRequired,
-    disregardLevel: DisregardLevel.None
+    disregardLevel: DisregardLevel.None,
+    consensusDiscretionariness,
+    loriDiscretionariness,
+    tedDiscretionariness,
+
   };
   const addedCategory: Category = await addCategoryToDb(category);
   return response.json(addedCategory)
+}
+
+export const updateCategory = async (request: Request, response: Response, next: any) => {
+  const { id, name, parentId, transactionsRequired, consensusDiscretionariness, loriDiscretionariness, tedDiscretionariness } = request.body;
+  const category: Category = {
+    id,
+    name,
+    parentId,
+    transactionsRequired,
+    disregardLevel: DisregardLevel.None,
+    consensusDiscretionariness,
+    loriDiscretionariness,
+    tedDiscretionariness,
+
+  };
+  const updatedCategory: Category = await updateCategoryInDb(category);
+  return response.json(updatedCategory)
 }
 
 export const addCategories = async (request: Request, response: Response, next: any) => {

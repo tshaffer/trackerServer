@@ -278,6 +278,16 @@ export const addCategoryToDb = async (category: Category): Promise<Category> => 
     });
 }
 
+export const updateCategoryInDb = async (category: Category): Promise<Category> => {
+  const categoryModel = getCategoryModel();
+  const query = categoryModel.findOneAndUpdate(
+    { id: category.id },
+    category,
+    { new: true }
+  )
+  return await query.exec();
+}
+
 export const addCategoriesToDb = async (categories: Category[]): Promise<any> => {
   const categoryModel = getCategoryModel();
   return categoryModel.collection.insertMany(categories)
