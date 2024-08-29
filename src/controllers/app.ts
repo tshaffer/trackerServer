@@ -85,16 +85,16 @@ export const getCheckingAccountStatements = async (request: Request, response: R
 };
 
 export const addCategory = async (request: Request, response: Response, next: any) => {
-  const { id, name, parentId, transactionsRequired, consensusDiscretionariness, loriDiscretionariness, tedDiscretionariness } = request.body;
+  const { id, name, parentId, transactionsRequired, consensusImportance, loriImportance, tedImportance } = request.body;
   const category: Category = {
     id,
     name,
     parentId,
     transactionsRequired,
     disregardLevel: DisregardLevel.None,
-    consensusDiscretionariness,
-    loriDiscretionariness,
-    tedDiscretionariness,
+    consensusImportance,
+    loriImportance,
+    tedImportance,
 
   };
   const addedCategory: Category = await addCategoryToDb(category);
@@ -102,20 +102,20 @@ export const addCategory = async (request: Request, response: Response, next: an
 }
 
 export const updateCategory = async (request: Request, response: Response, next: any) => {
-  const { id, name, parentId, transactionsRequired, consensusDiscretionariness, loriDiscretionariness, tedDiscretionariness } = request.body;
+  const { id, name, parentId, transactionsRequired, consensusImportance, loriImportance, tedImportance } = request.body;
   const category: Category = {
     id,
     name,
     parentId,
     transactionsRequired,
     disregardLevel: DisregardLevel.None,
-    consensusDiscretionariness,
-    loriDiscretionariness,
-    tedDiscretionariness,
+    consensusImportance,
+    loriImportance,
+    tedImportance,
 
   };
-  const updatedCategory: Category = await updateCategoryInDb(category);
-  return response.json(updatedCategory)
+  await updateCategoryInDb(category);
+  return response.status(200).send();
 }
 
 export const addCategories = async (request: Request, response: Response, next: any) => {
@@ -184,7 +184,7 @@ export const updateTransaction = async (request: Request, response: Response, ne
 
 export const updateCategoryInTransactions = async (request: Request, response: Response, next: any) => {
   await updateCategoryInTransactionsInDb(request.body.categoryId, request.body.transactionIds);
-  
+
   return response.status(200).send();
 }
 

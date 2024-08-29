@@ -23,9 +23,9 @@ const CheckingAccountTransactionSchema = new Schema(
     excludeFromReportCalculations: { type: Boolean, required: true },
     isSplit: { type: Boolean, required: true },
     parentTransactionId: { type: String, required: true },
-    consensusDiscretionariness: { type: Number },
-    loriDiscretionariness: { type: Number },
-    tedDiscretionariness: { type: Number },
+    consensusImportance: { type: Number },
+    loriImportance: { type: Number },
+    tedImportance: { type: Number },
   },
 );
 

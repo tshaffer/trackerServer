@@ -16,13 +16,13 @@ const CreditCardTransactionSchema = new Schema(
     description: { type: String, required: true },
     type: { type: String, required: true },
     userDescription: { type: String, required: true },
-    overrideCategory:  { type: Boolean, required: true },
-    overrideCategoryId:  { type: String, required: true },
+    overrideCategory: { type: Boolean, required: true },
+    overrideCategoryId: { type: String, required: true },
     excludeFromReportCalculations: { type: Boolean, required: true },
-    consensusDiscretionariness: { type: Number },
-    loriDiscretionariness: { type: Number },
-    tedDiscretionariness: { type: Number },
-    },
+    consensusImportance: { type: Number },
+    loriImportance: { type: Number },
+    tedImportance: { type: Number },
+  },
 );
 
 export const getCreditCardTransactionModel = () => {

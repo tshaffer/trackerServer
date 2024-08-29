@@ -85,18 +85,18 @@ const getTransactionUpdateFields = (transaction: BankTransaction) => {
 
   const updateFields: any = { ...transaction }; // Spread the general transaction fields
 
-  // Determine which fields to set and unset for Discretionariness properties
-  if (transaction.consensusDiscretionariness === undefined) {
+  // Determine which fields to set and unset for Importance properties
+  if (transaction.consensusImportance === undefined) {
     updateFields.$set = {
-      loriDiscretionariness: transaction.loriDiscretionariness,
-      tedDiscretionariness: transaction.tedDiscretionariness,
+      loriImportance: transaction.loriImportance,
+      tedImportance: transaction.tedImportance,
     };
-    updateFields.$unset = { consensusDiscretionariness: "" };
+    updateFields.$unset = { consensusImportance: "" };
   } else {
     updateFields.$set = {
-      consensusDiscretionariness: transaction.consensusDiscretionariness,
+      consensusImportance: transaction.consensusImportance,
     };
-    updateFields.$unset = { loriDiscretionariness: "", tedDiscretionariness: "" };
+    updateFields.$unset = { loriImportance: "", tedImportance: "" };
   }
 
   return updateFields;
@@ -278,14 +278,36 @@ export const addCategoryToDb = async (category: Category): Promise<Category> => 
     });
 }
 
-export const updateCategoryInDb = async (category: Category): Promise<Category> => {
-  const categoryModel = getCategoryModel();
-  const query = categoryModel.findOneAndUpdate(
+const getCategoryUpdateFields = (category: Category) => {
+
+  const updateFields: any = { ...category };
+
+  // Determine which fields to set and unset for Importance properties
+  if (category.consensusImportance === undefined) {
+    updateFields.$set = {
+      loriImportance: category.loriImportance,
+      tedImportance: category.tedImportance,
+    };
+    updateFields.$unset = { consensusImportance: "" };
+  } else {
+    updateFields.$set = {
+      consensusImportance: category.consensusImportance,
+    };
+    updateFields.$unset = { loriImportance: "", tedImportance: "" };
+  }
+
+  return updateFields;
+}
+
+export const updateCategoryInDb = async (category: Category): Promise<void> => {
+
+  const updateFields = getCategoryUpdateFields(category);
+
+  return await getCategoryModel().findOneAndUpdate(
     { id: category.id },
-    category,
+    updateFields,
     { new: true }
   )
-  return await query.exec();
 }
 
 export const addCategoriesToDb = async (categories: Category[]): Promise<any> => {

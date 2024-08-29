@@ -12,10 +12,10 @@ const CategorySchema = new Schema(
     parentId: { type: String, required: true },
     transactionsRequired: { type: Boolean, required: true },
     disregardLevel: { type: Number, required: true },
-    consensusDiscretionariness: { type: Number },
-    loriDiscretionariness: { type: Number },
-    tedDiscretionariness: { type: Number },
-    },
+    consensusImportance: { type: Number },
+    loriImportance: { type: Number },
+    tedImportance: { type: Number },
+  },
 );
 
 export const getCategoryModel = () => {
