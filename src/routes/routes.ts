@@ -27,6 +27,8 @@ import {
   addCategories,
   updateCategoryInTransactions,
   updateCategory,
+  deleteCategory,
+  getTransactionsByCategoryAssignmentRuleId,
 } from '../controllers';
 
 export class Routes {
@@ -52,13 +54,15 @@ export class Routes {
     app.get('/api/v1/duplicateCreditCardTransactions', getDuplicateCreditCardTransactions);
     app.get('/api/v1/minMaxCreditCardTransactionDates', getMinMaxCreditCardTransactionDates);
     app.get('/api/v1/minMaxCheckingAccountTransactionDates', getMinMaxCheckingAccountTransactionDates);
-
+    app.get('/api/v1/transactionsByCategoryAssignmentRuleId', getTransactionsByCategoryAssignmentRuleId);
+    
     app.post('/api/v1/initializeDB', initializeDB);
 
     app.post('/api/v1/statement', uploadStatement);
 
     app.post('/api/v1/addCategory', addCategory);
     app.post('/api/v1/updateCategory', updateCategory);
+    app.post('/api/v1/deleteCategory', deleteCategory);
     app.post('/api/v1/addCategories', addCategories);
     app.post('/api/v1/addCategoryAssignmentRule', addCategoryAssignmentRule);
     app.post('/api/v1/updateCategoryAssignmentRule', updateCategoryAssignmentRule);

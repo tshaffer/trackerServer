@@ -310,6 +310,13 @@ export const updateCategoryInDb = async (category: Category): Promise<void> => {
   )
 }
 
+export const deleteCategoryFromDb = async (id: string): Promise<void> => {
+  const categoryModel = getCategoryModel();
+  const filter = { id };
+  await categoryModel.deleteOne(filter);
+}
+
+
 export const addCategoriesToDb = async (categories: Category[]): Promise<any> => {
   const categoryModel = getCategoryModel();
   return categoryModel.collection.insertMany(categories)
@@ -470,3 +477,31 @@ const setIsSplitInDb = async (transactionId: string) => {
     console.error('Error updating transaction:', error);
   }
 }
+
+export const getTransactionsByCategoryAssignmentRuleIdFromDb = async (ruleId: string): Promise<CreditCardTransaction[]> => {
+  try {
+    // Find the category assignment rule by ID
+    const categoryAssignmentRule = await getCategoryAssignmentRuleModel().findOne({ id: ruleId });
+
+    if (!categoryAssignmentRule) {
+      throw new Error(`CategoryAssignmentRule with ID ${ruleId} not found`);
+    }
+
+    const { pattern } = categoryAssignmentRule;
+
+    // Find transactions that match the pattern in the userDescription
+    const matchingTransactions = await getCreditCardTransactionModel().find({
+      userDescription: { $regex: pattern, $options: 'i' }, // Case-insensitive matching
+    });
+
+    console.log('getTransactionsByCategoryAssignmentRuleId');
+    console.log('rule:', categoryAssignmentRule);
+    console.log('matchingTransactions:', matchingTransactions);
+
+    // return matchingTransactions;
+    return [];
+  } catch (error) {
+    console.error('Error finding transactions by category assignment rule:', error);
+    throw error;
+  }
+};

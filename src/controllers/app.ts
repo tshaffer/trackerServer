@@ -28,7 +28,9 @@ import {
   replaceCategoryAssignmentRulesInDb,
   addCategoriesToDb,
   updateCategoryInTransactionsInDb,
-  updateCategoryInDb
+  updateCategoryInDb,
+  deleteCategoryFromDb,
+  getTransactionsByCategoryAssignmentRuleIdFromDb
 } from './dbInterface';
 import { DisregardLevel } from '../types/enums';
 
@@ -118,6 +120,12 @@ export const updateCategory = async (request: Request, response: Response, next:
   return response.status(200).send();
 }
 
+export const deleteCategory = async (request: Request, response: Response, next: any) => {
+  const { id } = request.body;
+  await deleteCategoryFromDb(id);
+  return response.status(200).send();
+}
+
 export const addCategories = async (request: Request, response: Response, next: any) => {
   const categories = request.body;
   await addCategoriesToDb(categories);
@@ -197,4 +205,10 @@ export const splitTransaction = async (request: Request, response: Response, nex
   await splitTransactionInDb(parentTransactionId, splitTransactions);
 
   return response.status(200).send();
+}
+
+export const getTransactionsByCategoryAssignmentRuleId = async (request: Request, response: Response, next: any) => {
+  const categoryAssignmentRuleId: string | null = request.query.categoryAssignmentRuleId ? request.query.categoryAssignmentRuleId as string : '';
+  const poo: any[] = await getTransactionsByCategoryAssignmentRuleIdFromDb(categoryAssignmentRuleId);
+  response.json([]);
 }
