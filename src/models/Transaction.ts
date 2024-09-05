@@ -12,26 +12,26 @@ const TransactionBaseSchema = new Schema({
   amount: { type: Number, required: true },
   userDescription: { type: String, required: true },
   overrideCategory: { type: Boolean, required: true },
-  overrideCategoryId: { type: String, required: true },
+  overrideCategoryId: { type: String, required: false }, // Make optional
   excludeFromReportCalculations: { type: Boolean, required: true },
-  consensusImportance: { type: Number },
-  loriImportance: { type: Number },
-  tedImportance: { type: Number },
-}, { _id: false }); // _id: false to prevent creation of a new _id field in nested schema
+  consensusImportance: { type: Number, required: false }, // Optional
+  loriImportance: { type: Number, required: false }, // Optional
+  tedImportance: { type: Number, required: false }, // Optional
+}, { _id: false }); // Prevents _id in base schema
 
 const CheckingAccountTransactionSchema = new Schema({
   ...TransactionBaseSchema.obj, // Spread the base schema fields
   transactionType: { type: String, required: true },
   name: { type: String, required: true },
-  memo: { type: String, required: true },
+  memo: { type: String, required: false }, // Make optional if applicable
   checkingAccountTransactionType: { type: String, required: true },
-  checkNumber: { type: String, required: true },
-  payee: { type: String, required: true },
+  checkNumber: { type: String, required: false }, // Make optional if applicable
+  payee: { type: String, required: false }, // Make optional if applicable
   isSplit: { type: Boolean, required: true },
-  parentTransactionId: { type: String, required: true },
+  parentTransactionId: { type: String, required: false }, // Make optional if applicable
 });
 
-const CreditCardTransactionSchema   = new Schema({
+const CreditCardTransactionSchema = new Schema({
   ...TransactionBaseSchema.obj, // Spread the base schema fields
   postDate: { type: String, required: true },
   category: { type: String, required: true },
