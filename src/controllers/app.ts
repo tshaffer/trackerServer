@@ -9,6 +9,7 @@ import {
   CategoryAssignmentRule,
   CheckingAccountStatement,
   CreditCardStatement,
+  CreditCardTransaction,
   SplitTransaction
 } from '../types';
 import {
@@ -209,6 +210,6 @@ export const splitTransaction = async (request: Request, response: Response, nex
 
 export const getTransactionsByCategoryAssignmentRuleId = async (request: Request, response: Response, next: any) => {
   const categoryAssignmentRuleId: string | null = request.query.categoryAssignmentRuleId ? request.query.categoryAssignmentRuleId as string : '';
-  const poo: any[] = await getTransactionsByCategoryAssignmentRuleIdFromDb(categoryAssignmentRuleId);
-  response.json([]);
+  const transactions: CreditCardTransaction[] = await getTransactionsByCategoryAssignmentRuleIdFromDb(categoryAssignmentRuleId);
+  response.json(transactions);
 }

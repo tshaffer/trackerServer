@@ -490,16 +490,16 @@ export const getTransactionsByCategoryAssignmentRuleIdFromDb = async (ruleId: st
     const { pattern } = categoryAssignmentRule;
 
     // Find transactions that match the pattern in the userDescription
-    const matchingTransactions = await getCreditCardTransactionModel().find({
+    const matchingTransactionsModels = await getCreditCardTransactionModel().find({
       userDescription: { $regex: pattern, $options: 'i' }, // Case-insensitive matching
     });
+    const matchingTransactions: CreditCardTransaction[] = matchingTransactionsModels.map((model: any) => model.toObject());
 
     console.log('getTransactionsByCategoryAssignmentRuleId');
     console.log('rule:', categoryAssignmentRule);
     console.log('matchingTransactions:', matchingTransactions);
 
-    // return matchingTransactions;
-    return [];
+    return matchingTransactions;
   } catch (error) {
     console.error('Error finding transactions by category assignment rule:', error);
     throw error;
