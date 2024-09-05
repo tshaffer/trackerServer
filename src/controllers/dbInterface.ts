@@ -11,12 +11,12 @@ import {
 } from '../types';
 
 import {
-  getCreditCardTransactionModel,
-  getCheckingAccountTransactionModel,
   getCategoryModel,
   getCategoryAssignmentRuleModel,
   getCheckingAccountStatementModel,
-  getCreditCardStatementModel
+  getCreditCardStatementModel,
+  CreditCardTransactionModel,
+  CheckingAccountTransactionModel,
 } from '../models';
 import { BankTransactionType } from '../types/enums';
 
@@ -47,8 +47,7 @@ export const addCreditCardStatementToDb = async (statement: CreditCardStatement)
 }
 
 export const addCreditCardTransactionsToDb = async (creditCardTransactions: CreditCardTransaction[]): Promise<any> => {
-  const creditCardTransactionModel = getCreditCardTransactionModel();
-  return creditCardTransactionModel.collection.insertMany(creditCardTransactions)
+  return CreditCardTransactionModel.collection.insertMany(creditCardTransactions)
     .then((retVal: any) => {
       return Promise.resolve(retVal);
     })
@@ -60,7 +59,7 @@ export const addCreditCardTransactionsToDb = async (creditCardTransactions: Cred
 }
 
 export const addCheckingAccountTransactionsToDb = async (checkingAccountTransactions: any[]): Promise<any> => {
-  const checkingAccountTransactionModel = getCheckingAccountTransactionModel();
+  const checkingAccountTransactionModel = CheckingAccountTransactionModel;
   return checkingAccountTransactionModel.collection.insertMany(checkingAccountTransactions)
     .then((retVal: any) => {
       return Promise.resolve(retVal);
@@ -106,7 +105,7 @@ export const updateCreditCardTransactionInDb = async (transaction: CreditCardTra
 
   const updateFields = getTransactionUpdateFields(transaction);
 
-  await getCreditCardTransactionModel().findOneAndUpdate(
+  await CreditCardTransactionModel.findOneAndUpdate(
     { id: transaction.id },
     updateFields,
     { new: true }
@@ -117,7 +116,7 @@ export const updateCheckingAccountTransactionInDb = async (transaction: Checking
 
   const updateFields = getTransactionUpdateFields(transaction);
 
-  await getCheckingAccountTransactionModel().findOneAndUpdate(
+  await CheckingAccountTransactionModel.findOneAndUpdate(
     { id: transaction.id },
     updateFields,
     { new: true }
@@ -126,8 +125,7 @@ export const updateCheckingAccountTransactionInDb = async (transaction: Checking
 
 export const updateCategoryInTransactionsInDb = async (categoryId: string, transactionIds: string[]): Promise<void> => {
   try {
-    const creditCardTransactionModel = getCreditCardTransactionModel();
-    await creditCardTransactionModel.updateMany(
+    await CreditCardTransactionModel.updateMany(
       { id: { $in: transactionIds } },
       { $set: { overrideCategory: true, overrideCategoryId: categoryId } }
     );
@@ -149,7 +147,7 @@ export const getCheckingAccountTransactionsFromDb = async (
 
   console.log('getCheckingAccountTransactionsFromDb: ', querySpec);
 
-  const checkingAccountTransactionModel = getCheckingAccountTransactionModel();
+  const checkingAccountTransactionModel = CheckingAccountTransactionModel;
 
   const query = checkingAccountTransactionModel.find(querySpec);
 
@@ -174,9 +172,7 @@ export const getCreditCardTransactionsFromDb = async (
 
   console.log('getCreditCardTransactionsFromDb: ', querySpec);
 
-  const creditCardTransactionModel = getCreditCardTransactionModel();
-
-  const query = creditCardTransactionModel.find(querySpec);
+  const query = CreditCardTransactionModel.find(querySpec);
 
   const documents: any = await query.exec();
   const transactions: CreditCardTransaction[] = [];
@@ -381,9 +377,7 @@ export const deleteCategoryAssignmentRuleFromDb = async (categoryAssignmentRule:
 
 export const getDuplicateCreditCardTransactionsDb = async (): Promise<CreditCardTransaction[]> => {
 
-  const creditCardTransactionModel = getCreditCardTransactionModel();
-
-  const query = creditCardTransactionModel.aggregate([
+  const query = CreditCardTransactionModel.aggregate([
     {
       $group: {
         _id: {
@@ -413,8 +407,7 @@ export const getDuplicateCreditCardTransactionsDb = async (): Promise<CreditCard
 }
 
 export const removeDuplicateCreditCardTransactionsDb = async (idsToDelete: string[]): Promise<void> => {
-  const creditCardTransactionModel = getCreditCardTransactionModel();
-  return creditCardTransactionModel.deleteMany({ _id: { $in: idsToDelete } })
+  return CreditCardTransactionModel.deleteMany({ _id: { $in: idsToDelete } })
     .then((deleteResult) => {
       console.log('Deleted documents count:', deleteResult.deletedCount);
       return Promise.resolve();
@@ -427,11 +420,11 @@ export const removeDuplicateCreditCardTransactionsDb = async (idsToDelete: strin
 }
 
 export const getMinMaxCreditCardTransactionDatesFromDb = async (): Promise<MinMaxDates> => {
-  return getMinMaxTransactionDatesFromDb(getCreditCardTransactionModel());
+  return getMinMaxTransactionDatesFromDb(CreditCardTransactionModel);
 }
 
 export const getMinMaxCheckingAccountTransactionDatesFromDb = async (): Promise<MinMaxDates> => {
-  return getMinMaxTransactionDatesFromDb(getCheckingAccountTransactionModel());
+  return getMinMaxTransactionDatesFromDb(CheckingAccountTransactionModel);
 }
 
 const getMinMaxTransactionDatesFromDb = async (model: any): Promise<MinMaxDates | null> => {
@@ -466,7 +459,7 @@ export const splitTransactionInDb = async (parentTransactionId: string, splitTra
 }
 
 const setIsSplitInDb = async (transactionId: string) => {
-  const model = getCheckingAccountTransactionModel();
+  const model = CheckingAccountTransactionModel;
   try {
     await model.updateOne(
       { id: transactionId },
@@ -490,7 +483,7 @@ export const getTransactionsByCategoryAssignmentRuleIdFromDb = async (ruleId: st
     const { pattern } = categoryAssignmentRule;
 
     // Find transactions that match the pattern in the userDescription
-    const matchingTransactionsModels = await getCreditCardTransactionModel().find({
+    const matchingTransactionsModels = await CreditCardTransactionModel.find({
       userDescription: { $regex: pattern, $options: 'i' }, // Case-insensitive matching
     });
     const matchingTransactions: CreditCardTransaction[] = matchingTransactionsModels.map((model: any) => model.toObject());
