@@ -33,7 +33,6 @@ import {
   deleteCategoryFromDb,
   getTransactionsByCategoryAssignmentRuleIdFromDb
 } from './dbInterface';
-import { DisregardLevel } from '../types/enums';
 
 export const initializeDB = async (request: Request, response: Response, next: any) => {
 
@@ -46,8 +45,6 @@ export const initializeDB = async (request: Request, response: Response, next: a
       id: id,
       name: ignoreCategoryName,
       parentId: '',
-      transactionsRequired: false,
-      disregardLevel: DisregardLevel.None,
     };
     await addCategoryToDb(ignoreCategory);
   }
@@ -63,13 +60,7 @@ export const getVersion = (request: Request, response: Response, next: any) => {
 
 export const getCategories = async (request: Request, response: Response, next: any) => {
   const allCategories: Category[] = await getCategoriesFromDb();
-  const categories: Category[] = [];
-  for (const category of allCategories) {
-    if (category.disregardLevel === DisregardLevel.None) {
-      categories.push(category);
-    }
-  }
-  response.json(categories);
+  response.json(allCategories);
 };
 
 export const getCategoryAssignmentRules = async (request: Request, response: Response, next: any) => {
@@ -88,13 +79,11 @@ export const getCheckingAccountStatements = async (request: Request, response: R
 };
 
 export const addCategory = async (request: Request, response: Response, next: any) => {
-  const { id, name, parentId, transactionsRequired, consensusImportance, loriImportance, tedImportance } = request.body;
+  const { id, name, parentId, consensusImportance, loriImportance, tedImportance } = request.body;
   const category: Category = {
     id,
     name,
     parentId,
-    transactionsRequired,
-    disregardLevel: DisregardLevel.None,
     consensusImportance,
     loriImportance,
     tedImportance,
@@ -105,13 +94,11 @@ export const addCategory = async (request: Request, response: Response, next: an
 }
 
 export const updateCategory = async (request: Request, response: Response, next: any) => {
-  const { id, name, parentId, transactionsRequired, consensusImportance, loriImportance, tedImportance } = request.body;
+  const { id, name, parentId, consensusImportance, loriImportance, tedImportance } = request.body;
   const category: Category = {
     id,
     name,
     parentId,
-    transactionsRequired,
-    disregardLevel: DisregardLevel.None,
     consensusImportance,
     loriImportance,
     tedImportance,

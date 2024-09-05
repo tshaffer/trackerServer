@@ -10,8 +10,6 @@ const CategorySchema = new Schema(
     id: { type: String, required: true },
     name: { type: String, required: true },
     parentId: { type: String, required: true },
-    transactionsRequired: { type: Boolean, required: true },
-    disregardLevel: { type: Number, required: true },
     consensusImportance: { type: Number },
     loriImportance: { type: Number },
     tedImportance: { type: Number },

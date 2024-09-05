@@ -27,7 +27,7 @@ import {
   addCreditCardStatementToDb,
   addCheckingAccountStatementToDb
 } from './dbInterface';
-import { BankTransactionType, CheckingAccountTransactionType, DisregardLevel, StatementType } from '../types/enums';
+import { BankTransactionType, CheckingAccountTransactionType, StatementType } from '../types/enums';
 import { getIsoDate, isEmptyLine, isValidDate } from '../utilities';
 
 export const uploadStatement = async (request: Request, response: Response, next: any) => {
@@ -385,8 +385,6 @@ const executeAddReferencedCategories = async () => {
       id: uuidv4(),
       name,
       parentId: '',
-      transactionsRequired: false,
-      disregardLevel: DisregardLevel.None,
     };
   });
 
