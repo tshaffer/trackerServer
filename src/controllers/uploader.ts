@@ -181,6 +181,7 @@ const processCreditCardStatement = async (creditCardStatement: CreditCardStateme
       userDescription: description,
       overrideCategory: false,
       overrideCategoryId: '',
+      comment: '',
     };
 
     transactions.push(creditCardTransaction);
@@ -248,6 +249,7 @@ const processCheckingAccountStatement = async (checkingAccountStatement: Checkin
         overrideCategoryId: '',
         isSplit: false,
         parentTransactionId: '',
+        comment: '',
       };
       transactions.push(checkTransaction);
     } else {
@@ -266,6 +268,7 @@ const processCheckingAccountStatement = async (checkingAccountStatement: Checkin
         overrideCategoryId: '',
         isSplit: false,
         parentTransactionId: '',
+        comment: '',
       };
 
       transactions.push(checkingAccountTransaction);

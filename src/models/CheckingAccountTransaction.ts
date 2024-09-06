@@ -26,6 +26,7 @@ const CheckingAccountTransactionSchema = new Schema(
     consensusImportance: { type: Number },
     loriImportance: { type: Number },
     tedImportance: { type: Number },
+    comment: { type: String, required: true },
   },
 );
 
