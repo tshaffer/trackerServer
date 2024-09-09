@@ -29,6 +29,7 @@ import {
   updateCategory,
   deleteCategory,
   getTransactionsByCategoryAssignmentRuleId,
+  getAllTransactions,
 } from '../controllers';
 
 export class Routes {
@@ -47,6 +48,7 @@ export class Routes {
 
     app.get('/api/v1/version', getVersion);
     app.get('/api/v1/transactions', getTransactions);
+    app.get('/api/v1/allTransactions', getAllTransactions);
     app.get('/api/v1/categories', getCategories);
     app.get('/api/v1/categoryAssignmentRules', getCategoryAssignmentRules);
     app.get('/api/v1/checkingAccountStatements', getCheckingAccountStatements);

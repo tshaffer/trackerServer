@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 import { BankTransaction } from "entities";
-import { getCheckingAccountTransactionsFromDb, getCreditCardTransactionsFromDb } from "./dbInterface";
+import { getAllCheckingAccountTransactionsFromDb, getAllCreditCardTransactionsFromDb, getCheckingAccountTransactionsFromDb, getCreditCardTransactionsFromDb } from "./dbInterface";
 
 export const getTransactions = async (request: Request, response: Response, next: any) => {
 
@@ -12,6 +12,19 @@ export const getTransactions = async (request: Request, response: Response, next
 
   const checkingAccountTransactions: BankTransaction[] = includeCheckingAccountTransactions ? await getCheckingAccountTransactionsFromDb(startDate, endDate): [];
   const creditCardTransactions: BankTransaction[] = includeCreditCardTransactions ? await getCreditCardTransactionsFromDb(startDate, endDate) : [];
+
+  const allTransactions: any = {
+    checkingAccountTransactions,
+    creditCardTransactions,
+  };
+  
+  response.json(allTransactions);
+}
+
+export const getAllTransactions = async (request: Request, response: Response, next: any) => {
+
+  const checkingAccountTransactions: BankTransaction[] = await getAllCheckingAccountTransactionsFromDb();
+  const creditCardTransactions: BankTransaction[] = await getAllCreditCardTransactionsFromDb();
 
   const allTransactions: any = {
     checkingAccountTransactions,

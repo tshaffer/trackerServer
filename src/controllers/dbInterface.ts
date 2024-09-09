@@ -19,6 +19,7 @@ import {
   getCreditCardStatementModel
 } from '../models';
 import { BankTransactionType } from '../types/enums';
+import { Model } from 'mongoose';
 
 export const addCheckingAccountStatementToDb = async (statement: CheckingAccountStatement): Promise<void> => {
   const statementModel = getCheckingAccountStatementModel();
@@ -162,6 +163,27 @@ export const getCheckingAccountTransactionsFromDb = async (
   }
   return transactions;
 };
+
+const getAllTransactionsFromDb = async (model: Model<any>, bankTransactionType: BankTransactionType): Promise<BankTransaction[]> => {
+  const query = model.find({});
+  const documents: any = await query.exec();
+  const transactions: BankTransaction[] = [];
+  for (const document of documents) {
+    const transaction: BankTransaction = document.toObject() as BankTransaction;
+    transaction.bankTransactionType = bankTransactionType;
+    transactions.push(transaction);
+  }
+  return transactions
+}
+export const getAllCreditCardTransactionsFromDb = async (): Promise<BankTransaction[]> => {
+  const creditCardTransactionModel = getCreditCardTransactionModel();
+  return await getAllTransactionsFromDb(creditCardTransactionModel, BankTransactionType.CreditCard);
+}
+
+export const getAllCheckingAccountTransactionsFromDb = async (): Promise<BankTransaction[]> => {
+  const checkingAccountTransactionModel = getCheckingAccountTransactionModel();
+  return await getAllTransactionsFromDb(checkingAccountTransactionModel, BankTransactionType.Checking);
+}
 
 export const getCreditCardTransactionsFromDb = async (
   startDate: string,
