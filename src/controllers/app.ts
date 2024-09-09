@@ -60,7 +60,13 @@ export const getVersion = (request: Request, response: Response, next: any) => {
 
 export const getCategories = async (request: Request, response: Response, next: any) => {
   const allCategories: Category[] = await getCategoriesFromDb();
-  response.json(allCategories);
+  const categories: Category[] = [];
+  for (const category of allCategories) {
+    if (category.name.toLowerCase() !== 'ignore') {
+      categories.push(category);
+    }
+  }
+  response.json(categories);
 };
 
 export const getCategoryAssignmentRules = async (request: Request, response: Response, next: any) => {
