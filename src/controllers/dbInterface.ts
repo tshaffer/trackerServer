@@ -8,6 +8,7 @@ import {
   MinMaxDates,
   BankTransaction,
   SplitTransaction,
+  Transaction,
 } from '../types';
 
 import {
@@ -500,7 +501,7 @@ const setIsSplitInDb = async (transactionId: string) => {
   }
 }
 
-export const getTransactionsByCategoryAssignmentRuleIdFromDb = async (ruleId: string): Promise<CreditCardTransaction[]> => {
+export const getTransactionsByCategoryAssignmentRuleIdFromDb = async (ruleId: string): Promise<Transaction[]> => {
   try {
     // Find the category assignment rule by ID
     const categoryAssignmentRule = await getCategoryAssignmentRuleModel().findOne({ id: ruleId });
@@ -512,16 +513,21 @@ export const getTransactionsByCategoryAssignmentRuleIdFromDb = async (ruleId: st
     const { pattern } = categoryAssignmentRule;
 
     // Find transactions that match the pattern in the userDescription
-    const matchingTransactionsModels = await getCreditCardTransactionModel().find({
+    const matchingCreditCardTransactionsModels = await getCreditCardTransactionModel().find({
       userDescription: { $regex: pattern, $options: 'i' }, // Case-insensitive matching
     });
-    const matchingTransactions: CreditCardTransaction[] = matchingTransactionsModels.map((model: any) => model.toObject());
+    const matchingCreditCardTransactions: CreditCardTransaction[] = matchingCreditCardTransactionsModels.map((model: any) => model.toObject());
+    
+    const matchingCheckingAccountTransactionsModels = await getCheckingAccountTransactionModel().find({
+      userDescription: { $regex: pattern, $options: 'i' }, // Case-insensitive matching
+    });
+    const matchingCheckingAccountTransactions: CheckingAccountTransaction[] = matchingCheckingAccountTransactionsModels.map((model: any) => model.toObject());
 
     console.log('getTransactionsByCategoryAssignmentRuleId');
     console.log('rule:', categoryAssignmentRule);
-    console.log('matchingTransactions:', matchingTransactions);
+    console.log('matchingTransactions:', matchingCreditCardTransactions);
 
-    return matchingTransactions;
+    return [...matchingCreditCardTransactions, ...matchingCheckingAccountTransactions];
   } catch (error) {
     console.error('Error finding transactions by category assignment rule:', error);
     throw error;
