@@ -396,9 +396,35 @@ export const updateCategoryAssignmentRuleInDb = async (categoryAssignmentRule: C
   await query.exec();
 }
 
-export const deleteCategoryAssignmentRuleFromDb = async (categoryAssignmentRule: CategoryAssignmentRule): Promise<void> => {
+export const updatePatternInCategoryAssignmentRuleInDb = async (categoryAssignmentRuleId: string, pattern: string): Promise<void> => {
   const categoryAssignmentRuleModel = getCategoryAssignmentRuleModel();
-  const filter = { id: categoryAssignmentRule.id };
+  try {
+    await categoryAssignmentRuleModel.updateOne(
+      { id: categoryAssignmentRuleId },
+      { $set: { pattern } }
+    );
+    console.log('Category Assignment Rule pattern updated successfully');
+  } catch (error) {
+    console.error('Error updating transaction:', error);
+  }
+}
+
+export const updateCategoryInCategoryAssignmentRuleInDb = async (categoryAssignmentRuleId: string, categoryId: string): Promise<void> => {
+  const categoryAssignmentRuleModel = getCategoryAssignmentRuleModel();
+  try {
+    await categoryAssignmentRuleModel.updateOne(
+      { id: categoryAssignmentRuleId },
+      { $set: { categoryId } }
+    );
+    console.log('Category Assignment Rule category updated successfully');
+  } catch (error) {
+    console.error('Error updating transaction:', error);
+  }
+}
+
+export const deleteCategoryAssignmentRuleFromDb = async (id: string): Promise<void> => {
+  const categoryAssignmentRuleModel = getCategoryAssignmentRuleModel();
+  const filter = { id };
   await categoryAssignmentRuleModel.deleteOne(filter);
 }
 

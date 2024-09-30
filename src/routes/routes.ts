@@ -30,6 +30,8 @@ import {
   deleteCategory,
   getTransactionsByCategoryAssignmentRuleId,
   getAllTransactions,
+  updateCategoryInCategoryAssignmentRule,
+  updatePatternInCategoryAssignmentRule,
 } from '../controllers';
 
 export class Routes {
@@ -68,6 +70,8 @@ export class Routes {
     app.post('/api/v1/addCategories', addCategories);
     app.post('/api/v1/addCategoryAssignmentRule', addCategoryAssignmentRule);
     app.post('/api/v1/updateCategoryAssignmentRule', updateCategoryAssignmentRule);
+    app.post('/api/v1/updatePatternInCategoryAssignmentRule', updatePatternInCategoryAssignmentRule);
+    app.post('/api/v1/updateCategoryInCategoryAssignmentRule', updateCategoryInCategoryAssignmentRule);
     app.post('/api/v1/deleteCategoryAssignmentRule', deleteCategoryAssignmentRule);
     app.post('/api/v1/replaceCategoryAssignmentRules', replaceCategoryAssignmentRules);
     app.post('/api/v1/removeDuplicateCreditCardTransactions', removeDuplicateCreditCardTransactions);

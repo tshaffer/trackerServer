@@ -32,7 +32,9 @@ import {
   updateCategoryInTransactionsInDb,
   updateCategoryInDb,
   deleteCategoryFromDb,
-  getTransactionsByCategoryAssignmentRuleIdFromDb
+  getTransactionsByCategoryAssignmentRuleIdFromDb,
+  updateCategoryInCategoryAssignmentRuleInDb,
+  updatePatternInCategoryAssignmentRuleInDb
 } from './dbInterface';
 
 export const initializeDB = async (request: Request, response: Response, next: any) => {
@@ -149,14 +151,21 @@ export const updateCategoryAssignmentRule = async (request: Request, response: R
   return response.status(200).send();
 }
 
+export const updatePatternInCategoryAssignmentRule = async (request: Request, response: Response, next: any) => {
+  const { id, pattern } = request.body;
+  await updatePatternInCategoryAssignmentRuleInDb(id, pattern);
+  return response.status(200).send();
+}
+
+export const updateCategoryInCategoryAssignmentRule = async (request: Request, response: Response, next: any) => {
+  const { id, categoryId } = request.body;
+  await updateCategoryInCategoryAssignmentRuleInDb(id, categoryId);
+  return response.status(200).send();
+}
+
 export const deleteCategoryAssignmentRule = async (request: Request, response: Response, next: any) => {
-  const { id, pattern, categoryId } = request.body;
-  const categoryAssignmentRule: CategoryAssignmentRule = {
-    id,
-    pattern,
-    categoryId,
-  };
-  await deleteCategoryAssignmentRuleFromDb(categoryAssignmentRule);
+  const { id } = request.body;
+  await deleteCategoryAssignmentRuleFromDb(id);
   return response.status(200).send();
 }
 
