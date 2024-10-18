@@ -1,8 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import connectDB from './config/db';
-
-import { readConfig } from './config';
+import dotenv from 'dotenv';
 
 const bodyParser = require('body-parser');
 
@@ -15,13 +14,11 @@ class App {
 
   constructor() {
 
-    try {
-      readConfig('/Users/tedshaffer/Documents/Projects/tracker/trackerServer/src/config/config.env');
-    } catch (err: any) {
-      console.log('readConfig error');
-    }
+    dotenv.config(); // Load environment variables
 
-    console.log('mongo environment variable: ', process.env.MONGO_URI);
+    console.log('mongo environment variable: ');
+    console.log(process.env.MONGO_URI);
+    console.log('port: ', process.env.PORT);
 
     connectDB();
 

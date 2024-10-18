@@ -2,13 +2,11 @@ import mongoose from 'mongoose';
 
 export let connection: mongoose.Connection;
 
-import { transactionsDbConfiguration } from './config';
-
 async function connectDB() {
 
-  console.log('mongo uri is:');
-  console.log(transactionsDbConfiguration.MONGO_URI);
-  connection = await mongoose.createConnection(transactionsDbConfiguration.MONGO_URI, {
+  console.log('connectDB: mongo uri is:');
+  console.log(process.env.MONGO_URI);
+  connection = await mongoose.createConnection(process.env.MONGO_URI, {
     // useNewUrlParser: true,
     // useCreateIndex: true,
     // useFindAndModify: false,
