@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import multer from 'multer';
 
+import path from 'path';
 import * as fs from 'fs';
 import Papa from 'papaparse';
 import { isNil, isNumber } from 'lodash';
@@ -34,7 +35,9 @@ export const uploadStatement = async (request: Request, response: Response, next
 
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, 'public/statementUploads/');
+      const pathToUploads = path.join(__dirname, '../../public/statementUploads');
+      console.log('pathToUploads: ', pathToUploads);
+      cb(null, pathToUploads);
     },
     filename: (req, file, cb) => {
       cb(null, file.originalname);
